@@ -107,14 +107,16 @@
                     baseUsage: 1, 
                     sizes: [
                         { size: 1, price: 5.99 }
-                    ]
+                    ],
+                    perPlant: true
                 },
                 { 
                     name: "Cube", 
                     baseUsage: 1, 
                     sizes: [
                         { size: 1, price: 1.99 }
-                    ]
+                    ],
+                    perPlant: true
                 }
             ]
         };
@@ -163,13 +165,12 @@
             }
 
             const scalingFactor = members / baseData.members;
-            const plantFactor = scalingFactor * (baseData.plants / baseData.members);
             let totalCost = 0;
             let recommendation = "<h3>Empfohlene Produkte:</h3><table>";
             recommendation += "<tr><th>Produkt</th><th>Optimale Größe</th><th>Anzahl</th><th>Preis (€)</th><th>10-Wochen Verbrauch</th><th>Gesamtkosten (€)</th></tr>";
 
             baseData.products.forEach(product => {
-                const usage = product.baseUsage * (product.name === "Growbag" || product.name === "Cube" ? plantFactor : scalingFactor);
+                const usage = product.perPlant ? baseData.plants : product.baseUsage * scalingFactor;
                 const { bestOption, unitsNeeded } = calculateOptimalSize(product, usage);
                 const cost = unitsNeeded * bestOption.price;
                 totalCost += cost;
