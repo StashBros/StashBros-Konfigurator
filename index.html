@@ -122,18 +122,20 @@
         function calculateOptimalSize(product, usage) {
             let bestOption = product.sizes[0];
             let minCost = Infinity;
+            let unitsNeeded = 0;
 
             product.sizes.forEach(option => {
-                const unitsNeeded = Math.ceil(usage / option.size);
-                const cost = unitsNeeded * option.price;
+                const units = Math.ceil(usage / option.size);
+                const cost = units * option.price;
 
                 if (cost < minCost) {
                     minCost = cost;
                     bestOption = option;
+                    unitsNeeded = units;
                 }
             });
 
-            return bestOption;
+            return { bestOption, unitsNeeded };
         }
 
         function calculateDiscountedPrice(totalCost, weeks) {
@@ -164,18 +166,19 @@
             const plantFactor = scalingFactor * (baseData.plants / baseData.members);
             let totalCost = 0;
             let recommendation = "<h3>Empfohlene Produkte:</h3><table>";
-            recommendation += "<tr><th>Produkt</th><th>Optimale Größe</th><th>Preis (€)</th><th>10-Wochen Verbrauch</th><th>Gesamtkosten (€)</th></tr>";
+            recommendation += "<tr><th>Produkt</th><th>Optimale Größe</th><th>Anzahl</th><th>Preis (€)</th><th>10-Wochen Verbrauch</th><th>Gesamtkosten (€)</th></tr>";
 
             baseData.products.forEach(product => {
                 const usage = product.baseUsage * (product.name === "Growbag" || product.name === "Cube" ? plantFactor : scalingFactor);
-                const optimal = calculateOptimalSize(product, usage);
-                const cost = Math.ceil(usage / optimal.size) * optimal.price;
+                const { bestOption, unitsNeeded } = calculateOptimalSize(product, usage);
+                const cost = unitsNeeded * bestOption.price;
                 totalCost += cost;
 
                 recommendation += `<tr>
                     <td>${product.name}</td>
-                    <td>${optimal.size} L</td>
-                    <td>€${optimal.price.toFixed(2)}</td>
+                    <td>${bestOption.size} L</td>
+                    <td>${unitsNeeded}</td>
+                    <td>€${bestOption.price.toFixed(2)}</td>
                     <td>${usage.toFixed(2)} L</td>
                     <td>€${cost.toFixed(2)}</td>
                 </tr>`;
