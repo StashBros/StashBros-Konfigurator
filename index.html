@@ -1,17 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>StashBros Produkt-Konfigurator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
+            line-height: 1.6;
         }
         .container {
             max-width: 800px;
             margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
         }
         h1 {
             text-align: center;
@@ -19,14 +25,14 @@
         }
         label, input, button {
             display: block;
-            width: 100%;
             margin: 10px 0;
         }
         .output {
             margin-top: 20px;
             padding: 10px;
             border: 1px solid #ddd;
-            background-color: #f9f9f9;
+            background-color: #fff;
+            border-radius: 5px;
         }
         table {
             width: 100%;
@@ -43,14 +49,25 @@
         th {
             background-color: #f2f2f2;
         }
+        button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>StashBros Produkt-Konfigurator</h1>
-        <p>Geben Sie die Mitgliederanzahl Ihres Cannabis Social Clubs an, um die optimale Produktzusammenstellung, Verbrauch und Abo-Optionen zu berechnen.</p>
+        <p>Geben Sie die Mitgliederanzahl Ihres Cannabis Social Clubs ein, um die optimale Produktzusammenstellung und Kosten zu berechnen.</p>
         <label for="members">Mitgliederanzahl:</label>
-        <input type="number" id="members" placeholder="z.B. 500">
+        <input type="number" id="members" placeholder="z. B. 500">
         <button onclick="generateRecommendation()">Empfehlung anzeigen</button>
         <div class="output" id="output"></div>
     </div>
@@ -107,19 +124,25 @@
         function generateRecommendation() {
             const members = parseInt(document.getElementById('members').value);
             const output = document.getElementById('output');
+            output.innerHTML = "";
+
             if (!members || members <= 0) {
                 output.innerHTML = "<p>Bitte geben Sie eine gültige Mitgliederanzahl ein.</p>";
                 return;
             }
+
             const scalingFactor = members / baseData.members;
             let totalCost = 0;
-            let recommendation = "<h3>Empfohlenes Produktpaket:</h3><table>";
+
+            let recommendation = "<h3>Empfohlene Produkte:</h3><table>";
             recommendation += "<tr><th>Produkt</th><th>Optimale Größe</th><th>Preis (€)</th><th>10-Wochen Verbrauch</th><th>Gesamtkosten (€)</th></tr>";
+
             baseData.products.forEach(product => {
                 const usage = product.baseUsage * scalingFactor;
                 const optimal = calculateOptimalSize(product, usage);
                 const cost = Math.ceil(usage / optimal.size) * optimal.price;
                 totalCost += cost;
+
                 recommendation += `<tr>
                     <td>${product.name}</td>
                     <td>${optimal.size} L</td>
@@ -128,6 +151,7 @@
                     <td>€${cost.toFixed(2)}</td>
                 </tr>`;
             });
+
             recommendation += "</table>";
             recommendation += `<h3>Gesamtkosten für 10 Wochen: €${totalCost.toFixed(2)}</h3>`;
             output.innerHTML = recommendation;
@@ -135,4 +159,5 @@
     </script>
 </body>
 </html>
+
 
