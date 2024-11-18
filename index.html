@@ -35,7 +35,7 @@
     <script>
         const baseData = {
             members: 500,
-            plants: 1120,
+            plantsPerMember: 1120 / 500, // Verhältnis Pflanzen zu Mitgliedern
             products: [
                 { 
                     name: "Hesi Coco", 
@@ -153,6 +153,7 @@
             }
 
             const scalingFactor = members / baseData.members;
+            const plants = Math.ceil(members * baseData.plantsPerMember);
             let totalCost = 0;
             let recommendation = "<h3>Empfohlene Produkte:</h3><table>";
             recommendation += "<tr><th>Produkt</th><th>Optimale Größe</th><th>Anzahl</th><th>Preis (€)</th><th>10-Wochen Verbrauch</th><th>Gesamtkosten (€)</th></tr>";
@@ -176,13 +177,13 @@
 
             // Berechnung für Produkte pro Pflanze
             baseData.perPlantProducts.forEach(product => {
-                const unitsNeeded = baseData.plants; // Genau ein Stück pro Pflanze
+                const unitsNeeded = plants; // Genau ein Stück pro Pflanze
                 const cost = unitsNeeded * product.price;
                 totalCost += cost;
 
                 recommendation += `<tr>
                     <td>${product.name}</td>
-                    <td>1 Stück</td>
+                    <td>-</td>
                     <td>${unitsNeeded}</td>
                     <td>€${product.price.toFixed(2)}</td>
                     <td>${unitsNeeded} Stück</td>
