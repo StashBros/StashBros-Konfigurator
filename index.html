@@ -101,23 +101,11 @@
                         { size: 10, price: 49.70 }, 
                         { size: 20, price: 86.65 }
                     ]
-                },
-                { 
-                    name: "Growbag", 
-                    baseUsage: 1, 
-                    sizes: [
-                        { size: 1, price: 5.99 }
-                    ],
-                    perPlant: true
-                },
-                { 
-                    name: "Cube", 
-                    baseUsage: 1, 
-                    sizes: [
-                        { size: 1, price: 1.99 }
-                    ],
-                    perPlant: true
                 }
+            ],
+            perPlantProducts: [
+                { name: "Growbag", price: 5.99 },
+                { name: "Cube", price: 1.99 }
             ]
         };
 
@@ -169,8 +157,9 @@
             let recommendation = "<h3>Empfohlene Produkte:</h3><table>";
             recommendation += "<tr><th>Produkt</th><th>Optimale Größe</th><th>Anzahl</th><th>Preis (€)</th><th>10-Wochen Verbrauch</th><th>Gesamtkosten (€)</th></tr>";
 
+            // Berechnung für normale Produkte
             baseData.products.forEach(product => {
-                const usage = product.perPlant ? baseData.plants : product.baseUsage * scalingFactor;
+                const usage = product.baseUsage * scalingFactor;
                 const { bestOption, unitsNeeded } = calculateOptimalSize(product, usage);
                 const cost = unitsNeeded * bestOption.price;
                 totalCost += cost;
@@ -181,6 +170,22 @@
                     <td>${unitsNeeded}</td>
                     <td>€${bestOption.price.toFixed(2)}</td>
                     <td>${usage.toFixed(2)} L</td>
+                    <td>€${cost.toFixed(2)}</td>
+                </tr>`;
+            });
+
+            // Berechnung für Produkte pro Pflanze
+            baseData.perPlantProducts.forEach(product => {
+                const unitsNeeded = baseData.plants; // Genau ein Stück pro Pflanze
+                const cost = unitsNeeded * product.price;
+                totalCost += cost;
+
+                recommendation += `<tr>
+                    <td>${product.name}</td>
+                    <td>1 Stück</td>
+                    <td>${unitsNeeded}</td>
+                    <td>€${product.price.toFixed(2)}</td>
+                    <td>${unitsNeeded} Stück</td>
                     <td>€${cost.toFixed(2)}</td>
                 </tr>`;
             });
