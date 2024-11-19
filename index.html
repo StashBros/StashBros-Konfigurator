@@ -16,7 +16,7 @@
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         table, th, td { border: 1px solid #ddd; }
         th, td { padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
+        th { background-color: #f2f2f2; text-align: center; }
         button { padding: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; }
         button:hover { background-color: #45a049; }
         .error-message { color: red; font-size: 0.9em; }
@@ -81,9 +81,8 @@
             const discountedPrice = scaledCost - discountAmount; // Rabattierte Kosten
             const costPerPlant = discountedPrice / scaledPlants; // Kosten pro Pflanze
             const costPerGram = discountedPrice / scaledYield; // Kosten pro Gramm
-            const monthlyCost = discountedPrice / (weeks / 4.35); // Kosten pro Monat
 
-            return { discountedPrice, discountAmount, costPerPlant, costPerGram, monthlyCost };
+            return { discountedPrice, discountAmount, costPerPlant, costPerGram };
         }
 
         function generateRecommendation() {
@@ -148,9 +147,41 @@
             const twentyWeeks = calculateDiscountedPrice(totalCost10Weeks, 20, plants10Weeks);
             const fortyWeeks = calculateDiscountedPrice(totalCost10Weeks, 40, plants10Weeks);
 
-            recommendation += `<p><strong>Small (10 Wochen):</strong> 1,96% Rabatt - ${formatNumber(tenWeeks.discountedPrice)} (Ersparnis: ${formatNumber(tenWeeks.discountAmount)}) - Kosten pro Pflanze: ${formatNumber(tenWeeks.costPerPlant)} - Kosten pro Gramm: ${formatNumber(tenWeeks.costPerGram)} - Monatlich: ${formatNumber(tenWeeks.monthlyCost)}</p>`;
-            recommendation += `<p><strong>Medium (20 Wochen):</strong> 6,67% Rabatt - ${formatNumber(twentyWeeks.discountedPrice)} (Ersparnis: ${formatNumber(twentyWeeks.discountAmount)}) - Kosten pro Pflanze: ${formatNumber(twentyWeeks.costPerPlant)} - Kosten pro Gramm: ${formatNumber(twentyWeeks.costPerGram)} - Monatlich: ${formatNumber(twentyWeeks.monthlyCost)}</p>`;
-            recommendation += `<p><strong>Large (40 Wochen):</strong> 13,82% Rabatt - ${formatNumber(fortyWeeks.discountedPrice)} (Ersparnis: ${formatNumber(fortyWeeks.discountAmount)}) - Kosten pro Pflanze: ${formatNumber(fortyWeeks.costPerPlant)} - Kosten pro Gramm: ${formatNumber(fortyWeeks.costPerGram)} - Monatlich: ${formatNumber(fortyWeeks.monthlyCost)}</p>`;
+            recommendation += `
+                <table>
+                    <tr>
+                        <th>Abo-Modell</th>
+                        <th>Rabatt</th>
+                        <th>Gesamtkosten (€)</th>
+                        <th>Kosten/Gramm (€)</th>
+                        <th>Kosten/Pflanze (€)</th>
+                        <th>Ersparnis (€)</th>
+                    </tr>
+                    <tr>
+                        <td>10 Wochen</td>
+                        <td>1,96 %</td>
+                        <td>${formatNumber(tenWeeks.discountedPrice)}</td>
+                        <td>${formatNumber(tenWeeks.costPerGram)}</td>
+                        <td>${formatNumber(tenWeeks.costPerPlant)}</td>
+                        <td>${formatNumber(tenWeeks.discountAmount)}</td>
+                    </tr>
+                    <tr>
+                        <td>20 Wochen</td>
+                        <td>6,67 %</td>
+                        <td>${formatNumber(twentyWeeks.discountedPrice)}</td>
+                        <td>${formatNumber(twentyWeeks.costPerGram)}</td>
+                        <td>${formatNumber(twentyWeeks.costPerPlant)}</td>
+                        <td>${formatNumber(twentyWeeks.discountAmount)}</td>
+                    </tr>
+                    <tr>
+                        <td>40 Wochen</td>
+                        <td>13,82 %</td>
+                        <td>${formatNumber(fortyWeeks.discountedPrice)}</td>
+                        <td>${formatNumber(fortyWeeks.costPerGram)}</td>
+                        <td>${formatNumber(fortyWeeks.costPerPlant)}</td>
+                        <td>${formatNumber(fortyWeeks.discountAmount)}</td>
+                    </tr>
+                </table>`;
 
             output.innerHTML = recommendation;
         }
