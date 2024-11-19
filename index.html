@@ -36,6 +36,7 @@
         const baseData = {
             members: 500,
             plantsPerMember: 1120 / 500, // Verhältnis Pflanzen zu Mitgliedern
+            averageYieldPerPlant: 55.8, // Gramm Ertrag pro Pflanze in einem 10-Wochen-Zyklus
             products: [
                 { name: "Coco", baseUsage: 168, sizes: [{ size: 1, price: 6.15 }, { size: 5, price: 17.05 }, { size: 10, price: 26.40 }, { size: 20, price: 46.30 }] },
                 { name: "TNT Complex", baseUsage: 61.6, sizes: [{ size: 0.5, price: 5.15 }, { size: 1, price: 6.90 }, { size: 5, price: 18.45 }, { size: 10, price: 30.00 }, { size: 20, price: 51.55 }] },
@@ -73,13 +74,15 @@
 
         function calculateDiscountedPrice(totalCost10Weeks, weeks, plants10Weeks) {
             const scaledPlants = plants10Weeks * (weeks / 10); // Pflanzenanzahl skaliert mit Abo-Wochen
+            const scaledYield = scaledPlants * baseData.averageYieldPerPlant; // Gesamtertrag in Gramm
             const scaledCost = totalCost10Weeks * (weeks / 10); // Gesamtkosten skaliert
             const discountRate = weeks === 10 ? 0.03 : weeks === 20 ? 0.05 : 0.15;
             const discountAmount = scaledCost * discountRate; // Rabattbetrag
             const discountedPrice = scaledCost - discountAmount; // Rabattierte Kosten
             const costPerPlant = discountedPrice / scaledPlants; // Kosten pro Pflanze
+            const costPerGram = discountedPrice / scaledYield; // Kosten pro Gramm
 
-            return { discountedPrice, discountAmount, costPerPlant };
+            return { discountedPrice, discountAmount, costPerPlant, costPerGram };
         }
 
         function generateRecommendation() {
@@ -144,9 +147,9 @@
             const twentyWeeks = calculateDiscountedPrice(totalCost10Weeks, 20, plants10Weeks);
             const fortyWeeks = calculateDiscountedPrice(totalCost10Weeks, 40, plants10Weeks);
 
-            recommendation += `<p><strong>Small (10 Wochen):</strong> 3% Rabatt - ${formatNumber(tenWeeks.discountedPrice)} (Ersparnis: ${formatNumber(tenWeeks.discountAmount)}) - Kosten pro Pflanze: ${formatNumber(tenWeeks.costPerPlant)}</p>`;
-            recommendation += `<p><strong>Medium (20 Wochen):</strong> 5% Rabatt - ${formatNumber(twentyWeeks.discountedPrice)} (Ersparnis: ${formatNumber(twentyWeeks.discountAmount)}) - Kosten pro Pflanze: ${formatNumber(twentyWeeks.costPerPlant)}</p>`;
-            recommendation += `<p><strong>Large (40 Wochen):</strong> 15% Rabatt - ${formatNumber(fortyWeeks.discountedPrice)} (Ersparnis: ${formatNumber(fortyWeeks.discountAmount)}) - Kosten pro Pflanze: ${formatNumber(fortyWeeks.costPerPlant)}</p>`;
+            recommendation += `<p><strong>Small (10 Wochen):</strong> 3% Rabatt - ${formatNumber(tenWeeks.discountedPrice)} (Ersparnis: ${formatNumber(tenWeeks.discountAmount)}) - Kosten pro Pflanze: ${formatNumber(tenWeeks.costPerPlant)} - Kosten pro Gramm: ${formatNumber(tenWeeks.costPerGram)}</p>`;
+            recommendation += `<p><strong>Medium (20 Wochen):</strong> 5% Rabatt - ${formatNumber(twentyWeeks.discountedPrice)} (Ersparnis: ${formatNumber(twentyWeeks.discountAmount)}) - Kosten pro Pflanze: ${formatNumber(twentyWeeks.costPerPlant)} - Kosten pro Gramm: ${formatNumber(twentyWeeks.costPerGram)}</p>`;
+            recommendation += `<p><strong>Large (40 Wochen):</strong> 15% Rabatt - ${formatNumber(fortyWeeks.discountedPrice)} (Ersparnis: ${formatNumber(fortyWeeks.discountAmount)}) - Kosten pro Pflanze: ${formatNumber(fortyWeeks.costPerPlant)} - Kosten pro Gramm: ${formatNumber(fortyWeeks.costPerGram)}</p>`;
 
             output.innerHTML = recommendation;
         }
