@@ -5,119 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>StashBros Produkt-Konfigurator</title>
-    <style>
-        body {
-            font-family: 'Roboto', Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f7f8fa;
-            color: #333;
-        }
-        .container {
-            max-width: 700px;
-            margin: 50px auto;
-            padding: 20px;
-            background: #fff;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-        }
-        h1 {
-            text-align: center;
-            color: #222;
-            font-weight: 500;
-            margin-bottom: 10px;
-        }
-        p {
-            text-align: center;
-            color: #555;
-            font-size: 0.95rem;
-        }
-        label {
-            display: block;
-            margin: 15px 0 5px;
-            font-weight: 500;
-        }
-        input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 1rem;
-            transition: border-color 0.3s;
-        }
-        input:focus {
-            border-color: #4CAF50;
-            outline: none;
-        }
-        input.error {
-            border-color: red;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            margin-top: 20px;
-            font-size: 1rem;
-            font-weight: bold;
-            color: #fff;
-            background: #4CAF50;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background: #45a049;
-        }
-        .output {
-            margin-top: 30px;
-            padding: 15px;
-            background: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .output h3 {
-            margin-bottom: 15px;
-            font-weight: 500;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            font-size: 0.9rem;
-        }
-        table th, table td {
-            padding: 10px;
-            text-align: left;
-            border: 1px solid #ddd;
-        }
-        table th {
-            background: #f4f4f4;
-            text-align: center;
-        }
-        .error-message {
-            color: red;
-            font-size: 0.85rem;
-            margin-top: 5px;
-        }
-        .footnote {
-            font-size: 0.8rem;
-            color: #666;
-            margin-top: 20px;
-            text-align: center;
-            font-style: italic;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <h1>StashBros Produkt-Konfigurator</h1>
         <p>Geben Sie die Mitgliederanzahl Ihres Cannabis Social Clubs ein, um die optimale Produktzusammenstellung, Verbrauch und Abo-Optionen zu berechnen.</p>
         <label for="members">Mitgliederanzahl:</label>
-        <input type="number" id="members" min="1" max="100000" placeholder="z. B. 500" aria-describedby="memberHelp">
+        <input type="number" id="members" min="1" max="100000" placeholder="z. B. 500">
         <span id="memberHelp" class="error-message"></span>
-        <button id="calculate-btn" aria-label="Berechnung starten" onclick="generateRecommendation()">Empfehlung anzeigen</button>
+        <button id="calculate-btn" onclick="generateRecommendation()">Empfehlung anzeigen</button>
         <div class="output" id="output"></div>
     </div>
+
     <script>
         const baseData = {
             members: 500,
@@ -137,146 +37,68 @@
             ]
         };
 
-        const formatNumber = (number) => new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(number);
+        const formatNumber = (number) =>
+            new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(number);
 
         function calculateOptimalSize(product, usage) {
-            let bestOption = product.sizes[0];
-            let minCost = Infinity;
-            let unitsNeeded = 0;
+            const bestOption = product.sizes.reduce((best, current) => {
+                const units = Math.ceil(usage / current.size);
+                const cost = units * current.price;
+                return cost < best.cost ? { option: current, units, cost } : best;
+            }, { option: product.sizes[0], units: 0, cost: Infinity });
 
-            product.sizes.forEach(option => {
-                const units = Math.ceil(usage / option.size);
-                const cost = units * option.price;
-
-                if (cost < minCost) {
-                    minCost = cost;
-                    bestOption = option;
-                    unitsNeeded = units;
-                }
-            });
-
-            return { bestOption, unitsNeeded };
+            return bestOption;
         }
 
-        function calculateDiscountedPrice(totalCost10Weeks, weeks, plants10Weeks) {
-            const scaledPlants = plants10Weeks * (weeks / 10);
-            const scaledYield = scaledPlants * baseData.averageYieldPerPlant;
-            const scaledCost = totalCost10Weeks * (weeks / 10);
-            const discountRate = weeks === 10 ? 0.0196 : weeks === 20 ? 0.0667 : 0.1382;
-            const discountAmount = scaledCost * discountRate;
-            const discountedPrice = scaledCost - discountAmount;
-            const costPerPlant = discountedPrice / scaledPlants;
-            const costPerGram = discountedPrice / scaledYield;
+        function calculateDiscountedPrice(totalCost, weeks, plants) {
+            const discountRates = { 10: 0.0196, 20: 0.0667, 40: 0.1382 };
+            const scaledCost = totalCost * (weeks / 10);
+            const discount = scaledCost * (discountRates[weeks] || 0);
+            const discountedPrice = scaledCost - discount;
+            const costPerPlant = discountedPrice / (plants * (weeks / 10));
+            const costPerGram = discountedPrice / (plants * baseData.averageYieldPerPlant * (weeks / 10));
             const monthlyCost = discountedPrice / (weeks / 4.35);
 
-            return { discountedPrice, discountAmount, costPerPlant, costPerGram, monthlyCost };
+            return { discountedPrice, discount, costPerPlant, costPerGram, monthlyCost };
         }
 
         function generateRecommendation() {
             const membersInput = document.getElementById('members');
             const members = parseInt(membersInput.value);
-            const output = document.getElementById('output');
-            const errorMessage = document.getElementById('memberHelp');
-
-            membersInput.classList.remove('error');
-            errorMessage.innerHTML = "";
-            output.innerHTML = "";
 
             if (isNaN(members) || members <= 0 || members > 100000) {
-                errorMessage.innerHTML = "Bitte geben Sie eine gültige Mitgliederanzahl (1-100000) ein.";
-                membersInput.classList.add('error');
+                document.getElementById('memberHelp').textContent = "Bitte geben Sie eine gültige Mitgliederanzahl ein.";
                 return;
             }
 
+            const plants = Math.ceil(members * baseData.plantsPerMember);
             const scalingFactor = members / baseData.members;
-            const plants10Weeks = Math.ceil(members * baseData.plantsPerMember);
-            let totalCost10Weeks = 0;
 
-            let recommendation = "<h3>Empfohlene Produkte:</h3><table>";
-            recommendation += "<tr><th>Produkt</th><th>Optimale Größe</th><th>Anzahl</th><th>Preis (€)</th><th>10-Wochen Verbrauch</th><th>Gesamtkosten (€)</th></tr>";
-
-            baseData.products.forEach(product => {
+            const productRows = baseData.products.map((product) => {
                 const usage = product.baseUsage * scalingFactor;
-                const { bestOption, unitsNeeded } = calculateOptimalSize(product, usage);
-                const cost = unitsNeeded * bestOption.price;
-                totalCost10Weeks += cost;
-
-                recommendation += `<tr>
-                    <td>${product.name}</td>
-                    <td>${bestOption.size} L</td>
-                    <td>${unitsNeeded}</td>
-                    <td>${formatNumber(bestOption.price)}</td>
-                    <td>${usage.toFixed(2)} L</td>
-                    <td>${formatNumber(cost)}</td>
-                </tr>`;
+                const { option, units, cost } = calculateOptimalSize(product, usage);
+                return `<tr><td>${product.name}</td><td>${option.size} L</td><td>${units}</td><td>${formatNumber(option.price)}</td><td>${usage.toFixed(2)} L</td><td>${formatNumber(cost)}</td></tr>`;
             });
 
-            baseData.perPlantProducts.forEach(product => {
-                const unitsNeeded = plants10Weeks;
-                const cost = unitsNeeded * product.price;
-                totalCost10Weeks += cost;
-
-                recommendation += `<tr>
-                    <td>${product.name}</td>
-                    <td>-</td>
-                    <td>${unitsNeeded}</td>
-                    <td>${formatNumber(product.price)}</td>
-                    <td>${unitsNeeded} Stück</td>
-                    <td>${formatNumber(cost)}</td>
-                </tr>`;
+            const plantProductRows = baseData.perPlantProducts.map((product) => {
+                const cost = plants * product.price;
+                return `<tr><td>${product.name}</td><td>-</td><td>${plants}</td><td>${formatNumber(product.price)}</td><td>${plants} Stück</td><td>${formatNumber(cost)}</td></tr>`;
             });
 
-            recommendation += "</table>";
-            recommendation += `<h3>Gesamtkosten für 10 Wochen: ${formatNumber(totalCost10Weeks)}</h3>`;
-            recommendation += `<h3>Abo-Optionen:</h3>`;
+            const totalCost = productRows.reduce((sum, row) => sum + row.cost, 0) +
+                              plantProductRows.reduce((sum, row) => sum + row.cost, 0);
 
-            const tenWeeks = calculateDiscountedPrice(totalCost10Weeks, 10, plants10Weeks);
-            const twentyWeeks = calculateDiscountedPrice(totalCost10Weeks, 20, plants10Weeks);
-            const fortyWeeks = calculateDiscountedPrice(totalCost10Weeks, 40, plants10Weeks);
+            const subscriptionRows = [10, 20, 40].map((weeks) => {
+                const { discountedPrice, discount, costPerPlant, costPerGram, monthlyCost } =
+                    calculateDiscountedPrice(totalCost, weeks, plants);
+                return `<tr><td>${weeks} Wochen</td><td>${(discount / totalCost * 100).toFixed(2)}%</td><td>${formatNumber(discountedPrice)}</td><td>${formatNumber(monthlyCost)}</td><td>${formatNumber(costPerPlant)}</td><td>${formatNumber(costPerGram)}</td></tr>`;
+            });
 
-            recommendation += `
-                <table>
-                    <tr>
-                        <th>Abo-Modell</th>
-                        <th>Rabatt</th>
-                        <th>Gesamtkosten (€)</th>
-                        <th>Monatliche Kosten (€)</th>
-                        <th>Kosten/Gramm (€)</th>
-                        <th>Kosten/Pflanze (€)</th>
-                        <th>Ersparnis (€)</th>
-                    </tr>
-                    <tr>
-                        <td>10 Wochen</td>
-                        <td>1,96 %</td>
-                        <td>${formatNumber(tenWeeks.discountedPrice)}</td>
-                        <td>${formatNumber(tenWeeks.monthlyCost)}</td>
-                        <td>${formatNumber(tenWeeks.costPerGram)}</td>
-                        <td>${formatNumber(tenWeeks.costPerPlant)}</td>
-                        <td>${formatNumber(tenWeeks.discountAmount)}</td>
-                    </tr>
-                    <tr>
-                        <td>20 Wochen</td>
-                        <td>6,67 %</td>
-                        <td>${formatNumber(twentyWeeks.discountedPrice)}</td>
-                        <td>${formatNumber(twentyWeeks.monthlyCost)}</td>
-                        <td>${formatNumber(twentyWeeks.costPerGram)}</td>
-                        <td>${formatNumber(twentyWeeks.costPerPlant)}</td>
-                        <td>${formatNumber(twentyWeeks.discountAmount)}</td>
-                    </tr>
-                    <tr>
-                        <td>40 Wochen</td>
-                        <td>13,82 %</td>
-                        <td>${formatNumber(fortyWeeks.discountedPrice)}</td>
-                        <td>${formatNumber(fortyWeeks.monthlyCost)}</td>
-                        <td>${formatNumber(fortyWeeks.costPerGram)}</td>
-                        <td>${formatNumber(fortyWeeks.costPerPlant)}</td>
-                        <td>${formatNumber(fortyWeeks.discountAmount)}</td>
-                    </tr>
-                </table>`;
-
-            recommendation += `<p class="footnote">* Durchschnittlicher Ertrag pro Pflanze: ${baseData.averageYieldPerPlant.toFixed(2)} Gramm</p>`;
-
-            output.innerHTML = recommendation;
+            document.getElementById("output").innerHTML = `
+                <h3>Empfohlene Produkte:</h3>
+                <table>${productRows.join("")}${plantProductRows.join("")}</table>
+                <h3>Abo-Optionen:</h3>
+                <table>${subscriptionRows.join("")}</table>`;
         }
     </script>
 </body>
