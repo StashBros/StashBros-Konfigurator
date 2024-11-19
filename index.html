@@ -129,11 +129,15 @@
         }
 
         function calculateDiscountedPrice(totalCost, weeks) {
-            let discount = 0;
-            if (weeks === 10) discount = totalCost * 0.03;
-            else if (weeks === 20) discount = totalCost * 0.05;
-            else if (weeks === 40) discount = totalCost * 0.15;
-            return (totalCost * weeks / 10 - discount).toFixed(2);
+            let discountRate = 0;
+            if (weeks === 10) discountRate = 0.03;
+            else if (weeks === 20) discountRate = 0.05;
+            else if (weeks === 40) discountRate = 0.15;
+
+            const discountAmount = totalCost * discountRate;
+            const discountedPrice = totalCost * weeks / 10 - discountAmount;
+
+            return { discountedPrice: discountedPrice.toFixed(2), discountAmount: discountAmount.toFixed(2) };
         }
 
         function generateRecommendation() {
@@ -193,9 +197,15 @@
 
             recommendation += "</table>";
             recommendation += `<h3>Gesamtkosten für 10 Wochen: €${totalCost.toFixed(2)}</h3>`;
-            recommendation += `<p><strong>10 Wochen:</strong> €${calculateDiscountedPrice(totalCost, 10)} (3% Rabatt)</p>`;
-            recommendation += `<p><strong>20 Wochen:</strong> €${calculateDiscountedPrice(totalCost, 20)} (5% Rabatt)</p>`;
-            recommendation += `<p><strong>40 Wochen:</strong> €${calculateDiscountedPrice(totalCost, 40)} (15% Rabatt)</p>`;
+
+            // Rabatte berechnen und anzeigen
+            const tenWeeks = calculateDiscountedPrice(totalCost, 10);
+            const twentyWeeks = calculateDiscountedPrice(totalCost, 20);
+            const fortyWeeks = calculateDiscountedPrice(totalCost, 40);
+
+            recommendation += `<p><strong>10 Wochen:</strong> €${tenWeeks.discountedPrice} (3% Rabatt, Ersparnis: €${tenWeeks.discountAmount})</p>`;
+            recommendation += `<p><strong>20 Wochen:</strong> €${twentyWeeks.discountedPrice} (5% Rabatt, Ersparnis: €${twentyWeeks.discountAmount})</p>`;
+            recommendation += `<p><strong>40 Wochen:</strong> €${fortyWeeks.discountedPrice} (15% Rabatt, Ersparnis: €${fortyWeeks.discountAmount})</p>`;
 
             output.innerHTML = recommendation;
         }
