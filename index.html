@@ -38,7 +38,7 @@
             plantsPerMember: 1120 / 500, // Verhältnis Pflanzen zu Mitgliedern
             products: [
                 { 
-                    name: "Hesi Coco", 
+                    name: "Coco", 
                     baseUsage: 168, 
                     sizes: [
                         { size: 1, price: 6.15 }, 
@@ -199,15 +199,16 @@
 
             recommendation += "</table>";
             recommendation += `<h3>Gesamtkosten für 10 Wochen: ${formatNumber(totalCost)}</h3>`;
+            recommendation += `<h3>Abo-Optionen:</h3>`;
 
             // Rabatte berechnen und anzeigen
             const tenWeeks = calculateDiscountedPrice(totalCost, 10);
             const twentyWeeks = calculateDiscountedPrice(totalCost, 20);
             const fortyWeeks = calculateDiscountedPrice(totalCost, 40);
 
-            recommendation += `<p><strong>10 Wochen:</strong> 3% Rabatt - ${formatNumber(tenWeeks.discountedPrice)} (Ersparnis: ${formatNumber(tenWeeks.discountAmount)})</p>`;
-            recommendation += `<p><strong>20 Wochen:</strong> 5% Rabatt - ${formatNumber(twentyWeeks.discountedPrice)} (Ersparnis: ${formatNumber(twentyWeeks.discountAmount)})</p>`;
-            recommendation += `<p><strong>40 Wochen:</strong> 15% Rabatt - ${formatNumber(fortyWeeks.discountedPrice)} (Ersparnis: ${formatNumber(fortyWeeks.discountAmount)})</p>`;
+            recommendation += `<p><strong>Small (10 Wochen):</strong> 3% Rabatt - ${formatNumber(tenWeeks.discountedPrice)} (Ersparnis: ${formatNumber(tenWeeks.discountAmount)})</p>`;
+            recommendation += `<p><strong>Medium (20 Wochen):</strong> 5% Rabatt - ${formatNumber(twentyWeeks.discountedPrice)} (Ersparnis: ${formatNumber(twentyWeeks.discountAmount)})</p>`;
+            recommendation += `<p><strong>Large (40 Wochen):</strong> 15% Rabatt - ${formatNumber(fortyWeeks.discountedPrice)} (Ersparnis: ${formatNumber(fortyWeeks.discountAmount)})</p>`;
 
             output.innerHTML = recommendation;
         }
