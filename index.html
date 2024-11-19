@@ -20,6 +20,7 @@
         button { padding: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; }
         button:hover { background-color: #45a049; }
         .error-message { color: red; font-size: 0.9em; }
+        .footnote { font-size: 0.9em; color: #555; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -188,7 +189,7 @@
                     </tr>
                 </table>`;
 
-            recommendation += `<p><strong>Durchschnittlicher Ertrag pro Pflanze:</strong> ${baseData.averageYieldPerPlant} Gramm</p>`;
+            recommendation += `<p class="footnote">Durchschnittlicher Ertrag pro Pflanze: ${baseData.averageYieldPerPlant.toFixed(2)} Gramm</p>`;
 
             output.innerHTML = recommendation;
         }
