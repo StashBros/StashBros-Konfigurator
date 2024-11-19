@@ -20,9 +20,7 @@
         button { padding: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; }
         button:hover { background-color: #45a049; }
         .error-message { color: red; font-size: 0.9em; }
-        .chart-container { margin-top: 30px; text-align: center; }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
@@ -33,16 +31,12 @@
         <span id="memberHelp" class="error-message"></span>
         <button id="calculate-btn" aria-label="Berechnung starten" onclick="generateRecommendation()">Empfehlung anzeigen</button>
         <div class="output" id="output"></div>
-        <div class="chart-container">
-            <canvas id="discountChart"></canvas>
-            <canvas id="monthlyCostChart"></canvas>
-        </div>
     </div>
     <script>
         const baseData = {
             members: 500,
-            plantsPerMember: 1120 / 500,
-            averageYieldPerPlant: 55.8,
+            plantsPerMember: 1120 / 500, // Verhältnis Pflanzen zu Mitgliedern
+            averageYieldPerPlant: 55.8, // Gramm Ertrag pro Pflanze in einem 10-Wochen-Zyklus
             products: [
                 { name: "Coco", baseUsage: 168, sizes: [{ size: 1, price: 6.15 }, { size: 5, price: 17.05 }, { size: 10, price: 26.40 }, { size: 20, price: 46.30 }] },
                 { name: "TNT Complex", baseUsage: 61.6, sizes: [{ size: 0.5, price: 5.15 }, { size: 1, price: 6.90 }, { size: 5, price: 18.45 }, { size: 10, price: 30.00 }, { size: 20, price: 51.55 }] },
@@ -58,6 +52,39 @@
         };
 
         const formatNumber = (number) => new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(number);
+
+        function calculateOptimalSize(product, usage) {
+            let bestOption = product.sizes[0];
+            let minCost = Infinity;
+            let unitsNeeded = 0;
+
+            product.sizes.forEach(option => {
+                const units = Math.ceil(usage / option.size);
+                const cost = units * option.price;
+
+                if (cost < minCost) {
+                    minCost = cost;
+                    bestOption = option;
+                    unitsNeeded = units;
+                }
+            });
+
+            return { bestOption, unitsNeeded };
+        }
+
+        function calculateDiscountedPrice(totalCost10Weeks, weeks, plants10Weeks) {
+            const scaledPlants = plants10Weeks * (weeks / 10); // Pflanzenanzahl skaliert mit Abo-Wochen
+            const scaledYield = scaledPlants * baseData.averageYieldPerPlant; // Gesamtertrag in Gramm
+            const scaledCost = totalCost10Weeks * (weeks / 10); // Gesamtkosten skaliert
+            const discountRate = weeks === 10 ? 0.0196 : weeks === 20 ? 0.0667 : 0.1382; // Neue Rabattwerte
+            const discountAmount = scaledCost * discountRate; // Rabattbetrag
+            const discountedPrice = scaledCost - discountAmount; // Rabattierte Kosten
+            const costPerPlant = discountedPrice / scaledPlants; // Kosten pro Pflanze
+            const costPerGram = discountedPrice / scaledYield; // Kosten pro Gramm
+            const monthlyCost = discountedPrice / (weeks / 4.35); // Kosten pro Monat
+
+            return { discountedPrice, discountAmount, costPerPlant, costPerGram, monthlyCost };
+        }
 
         function generateRecommendation() {
             const membersInput = document.getElementById('members');
@@ -84,7 +111,18 @@
 
             baseData.products.forEach(product => {
                 const usage = product.baseUsage * scalingFactor;
-                totalCost10Weeks += calculateProductCost(product, usage, recommendation);
+                const { bestOption, unitsNeeded } = calculateOptimalSize(product, usage);
+                const cost = unitsNeeded * bestOption.price;
+                totalCost10Weeks += cost;
+
+                recommendation += `<tr>
+                    <td>${product.name}</td>
+                    <td>${bestOption.size} L</td>
+                    <td>${unitsNeeded}</td>
+                    <td>${formatNumber(bestOption.price)}</td>
+                    <td>${usage.toFixed(2)} L</td>
+                    <td>${formatNumber(cost)}</td>
+                </tr>`;
             });
 
             baseData.perPlantProducts.forEach(product => {
@@ -104,29 +142,13 @@
 
             recommendation += "</table>";
             recommendation += `<h3>Gesamtkosten für 10 Wochen: ${formatNumber(totalCost10Weeks)}</h3>`;
+            recommendation += `<h3>Abo-Optionen:</h3>`;
 
             const tenWeeks = calculateDiscountedPrice(totalCost10Weeks, 10, plants10Weeks);
             const twentyWeeks = calculateDiscountedPrice(totalCost10Weeks, 20, plants10Weeks);
             const fortyWeeks = calculateDiscountedPrice(totalCost10Weeks, 40, plants10Weeks);
 
-            recommendation += renderDiscountTable(tenWeeks, twentyWeeks, fortyWeeks);
-
-            output.innerHTML = recommendation;
-
-            renderCharts([
-                { label: "10 Wochen", value: tenWeeks.discountAmount },
-                { label: "20 Wochen", value: twentyWeeks.discountAmount },
-                { label: "40 Wochen", value: fortyWeeks.discountAmount }
-            ], [
-                { label: "10 Wochen", value: tenWeeks.monthlyCost },
-                { label: "20 Wochen", value: twentyWeeks.monthlyCost },
-                { label: "40 Wochen", value: fortyWeeks.monthlyCost }
-            ]);
-        }
-
-        function renderDiscountTable(tenWeeks, twentyWeeks, fortyWeeks) {
-            return `
-                <h3>Abo-Optionen:</h3>
+            recommendation += `
                 <table>
                     <tr>
                         <th>Abo-Modell</th>
@@ -165,58 +187,8 @@
                         <td>${formatNumber(fortyWeeks.discountAmount)}</td>
                     </tr>
                 </table>`;
-        }
 
-        function renderCharts(discountData, monthlyCostData) {
-            const discountCtx = document.getElementById("discountChart").getContext("2d");
-            new Chart(discountCtx, {
-                type: "bar",
-                data: {
-                    labels: discountData.map(data => data.label),
-                    datasets: [{
-                        label: "Rabatt (€)",
-                        data: discountData.map(data => data.value),
-                        backgroundColor: "rgba(75, 192, 192, 0.6)",
-                        borderColor: "rgba(75, 192, 192, 1)",
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { callbacks: { label: context => formatNumber(context.raw) } }
-                    },
-                    scales: {
-                        y: { beginAtZero: true, title: { display: true, text: "Rabatt (€)" } }
-                    }
-                }
-            });
-
-            const monthlyCostCtx = document.getElementById("monthlyCostChart").getContext("2d");
-            new Chart(monthlyCostCtx, {
-                type: "bar",
-                data: {
-                    labels: monthlyCostData.map(data => data.label),
-                    datasets: [{
-                        label: "Monatliche Kosten (€)",
-                        data: monthlyCostData.map(data => data.value),
-                        backgroundColor: "rgba(153, 102, 255, 0.6)",
-                        borderColor: "rgba(153, 102, 255, 1)",
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { callbacks: { label: context => formatNumber(context.raw) } }
-                    },
-                    scales: {
-                        y: { beginAtZero: true, title: { display: true, text: "Monatliche Kosten (€)" } }
-                    }
-                }
-            });
+            output.innerHTML = recommendation;
         }
     </script>
 </body>
