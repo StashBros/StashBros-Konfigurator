@@ -6,21 +6,106 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>StashBros Produkt-Konfigurator</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
-        .container { max-width: 800px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9; }
-        h1 { text-align: center; color: #333; }
-        label, input, button { display: block; margin: 10px 0; }
-        input { padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
-        input.error { border: 2px solid red; }
-        .output { margin-top: 20px; padding: 10px; border: 1px solid #ddd; background-color: #fff; border-radius: 5px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        table, th, td { border: 1px solid #ddd; }
-        th, td { padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; text-align: center; }
-        button { padding: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        button:hover { background-color: #45a049; }
-        .error-message { color: red; font-size: 0.9em; }
-        .footnote { font-size: 0.75em; color: #555; margin-top: 20px; font-style: italic; }
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f8fa;
+            color: #333;
+        }
+        .container {
+            max-width: 700px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        h1 {
+            text-align: center;
+            color: #222;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        p {
+            text-align: center;
+            color: #555;
+            font-size: 0.95rem;
+        }
+        label {
+            display: block;
+            margin: 15px 0 5px;
+            font-weight: 500;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+        input.error {
+            border-color: red;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #fff;
+            background: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .output {
+            margin-top: 30px;
+            padding: 15px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .output h3 {
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+        table th, table td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        table th {
+            background: #f4f4f4;
+            text-align: center;
+        }
+        .error-message {
+            color: red;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+        .footnote {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 20px;
+            text-align: center;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -36,8 +121,8 @@
     <script>
         const baseData = {
             members: 500,
-            plantsPerMember: 1120 / 500, // Verhältnis Pflanzen zu Mitgliedern
-            averageYieldPerPlant: 55.8, // Gramm Ertrag pro Pflanze in einem 10-Wochen-Zyklus
+            plantsPerMember: 1120 / 500,
+            averageYieldPerPlant: 55.8,
             products: [
                 { name: "Coco", baseUsage: 168, sizes: [{ size: 1, price: 6.15 }, { size: 5, price: 17.05 }, { size: 10, price: 26.40 }, { size: 20, price: 46.30 }] },
                 { name: "TNT Complex", baseUsage: 61.6, sizes: [{ size: 0.5, price: 5.15 }, { size: 1, price: 6.90 }, { size: 5, price: 18.45 }, { size: 10, price: 30.00 }, { size: 20, price: 51.55 }] },
@@ -74,15 +159,15 @@
         }
 
         function calculateDiscountedPrice(totalCost10Weeks, weeks, plants10Weeks) {
-            const scaledPlants = plants10Weeks * (weeks / 10); // Pflanzenanzahl skaliert mit Abo-Wochen
-            const scaledYield = scaledPlants * baseData.averageYieldPerPlant; // Gesamtertrag in Gramm
-            const scaledCost = totalCost10Weeks * (weeks / 10); // Gesamtkosten skaliert
-            const discountRate = weeks === 10 ? 0.0196 : weeks === 20 ? 0.0667 : 0.1382; // Neue Rabattwerte
-            const discountAmount = scaledCost * discountRate; // Rabattbetrag
-            const discountedPrice = scaledCost - discountAmount; // Rabattierte Kosten
-            const costPerPlant = discountedPrice / scaledPlants; // Kosten pro Pflanze
-            const costPerGram = discountedPrice / scaledYield; // Kosten pro Gramm
-            const monthlyCost = discountedPrice / (weeks / 4.35); // Kosten pro Monat
+            const scaledPlants = plants10Weeks * (weeks / 10);
+            const scaledYield = scaledPlants * baseData.averageYieldPerPlant;
+            const scaledCost = totalCost10Weeks * (weeks / 10);
+            const discountRate = weeks === 10 ? 0.0196 : weeks === 20 ? 0.0667 : 0.1382;
+            const discountAmount = scaledCost * discountRate;
+            const discountedPrice = scaledCost - discountAmount;
+            const costPerPlant = discountedPrice / scaledPlants;
+            const costPerGram = discountedPrice / scaledYield;
+            const monthlyCost = discountedPrice / (weeks / 4.35);
 
             return { discountedPrice, discountAmount, costPerPlant, costPerGram, monthlyCost };
         }
