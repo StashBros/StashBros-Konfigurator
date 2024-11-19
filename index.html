@@ -109,6 +109,8 @@
             ]
         };
 
+        const formatNumber = (number) => new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(number);
+
         function calculateOptimalSize(product, usage) {
             let bestOption = product.sizes[0];
             let minCost = Infinity;
@@ -137,7 +139,7 @@
             const discountAmount = totalCost * discountRate;
             const discountedPrice = totalCost * weeks / 10 - discountAmount;
 
-            return { discountedPrice: discountedPrice.toFixed(2), discountAmount: discountAmount.toFixed(2) };
+            return { discountedPrice, discountAmount };
         }
 
         function generateRecommendation() {
@@ -173,9 +175,9 @@
                     <td>${product.name}</td>
                     <td>${bestOption.size} L</td>
                     <td>${unitsNeeded}</td>
-                    <td>€${bestOption.price.toFixed(2)}</td>
+                    <td>${formatNumber(bestOption.price)}</td>
                     <td>${usage.toFixed(2)} L</td>
-                    <td>€${cost.toFixed(2)}</td>
+                    <td>${formatNumber(cost)}</td>
                 </tr>`;
             });
 
@@ -189,23 +191,23 @@
                     <td>${product.name}</td>
                     <td>-</td>
                     <td>${unitsNeeded}</td>
-                    <td>€${product.price.toFixed(2)}</td>
+                    <td>${formatNumber(product.price)}</td>
                     <td>${unitsNeeded} Stück</td>
-                    <td>€${cost.toFixed(2)}</td>
+                    <td>${formatNumber(cost)}</td>
                 </tr>`;
             });
 
             recommendation += "</table>";
-            recommendation += `<h3>Gesamtkosten für 10 Wochen: €${totalCost.toFixed(2)}</h3>`;
+            recommendation += `<h3>Gesamtkosten für 10 Wochen: ${formatNumber(totalCost)}</h3>`;
 
             // Rabatte berechnen und anzeigen
             const tenWeeks = calculateDiscountedPrice(totalCost, 10);
             const twentyWeeks = calculateDiscountedPrice(totalCost, 20);
             const fortyWeeks = calculateDiscountedPrice(totalCost, 40);
 
-            recommendation += `<p><strong>10 Wochen:</strong> €${tenWeeks.discountedPrice} (3% Rabatt, Ersparnis: €${tenWeeks.discountAmount})</p>`;
-            recommendation += `<p><strong>20 Wochen:</strong> €${twentyWeeks.discountedPrice} (5% Rabatt, Ersparnis: €${twentyWeeks.discountAmount})</p>`;
-            recommendation += `<p><strong>40 Wochen:</strong> €${fortyWeeks.discountedPrice} (15% Rabatt, Ersparnis: €${fortyWeeks.discountAmount})</p>`;
+            recommendation += `<p><strong>10 Wochen:</strong> 3% Rabatt - ${formatNumber(tenWeeks.discountedPrice)} (Ersparnis: ${formatNumber(tenWeeks.discountAmount)})</p>`;
+            recommendation += `<p><strong>20 Wochen:</strong> 5% Rabatt - ${formatNumber(twentyWeeks.discountedPrice)} (Ersparnis: ${formatNumber(twentyWeeks.discountAmount)})</p>`;
+            recommendation += `<p><strong>40 Wochen:</strong> 15% Rabatt - ${formatNumber(fortyWeeks.discountedPrice)} (Ersparnis: ${formatNumber(fortyWeeks.discountAmount)})</p>`;
 
             output.innerHTML = recommendation;
         }
