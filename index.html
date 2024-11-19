@@ -111,30 +111,16 @@
 
         const formatNumber = (number) => new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(number);
 
-        function calculateOptimalSize(product, usage) {
-            let bestOption = product.sizes[0];
-            let minCost = Infinity;
-            let unitsNeeded = 0;
-
-            product.sizes.forEach(option => {
-                const units = Math.ceil(usage / option.size);
-                const cost = units * option.price;
-
-                if (cost < minCost) {
-                    minCost = cost;
-                    bestOption = option;
-                    unitsNeeded = units;
-                }
-            });
-
-            return { bestOption, unitsNeeded };
-        }
-
         function calculateDiscountedPrice(totalCost, weeks, plantsPerCycle) {
+            // Skalieren der Pflanzenanzahl für die Laufzeit
             const scaledPlants = plantsPerCycle * (weeks / 10);
             const discountRate = weeks === 10 ? 0.03 : weeks === 20 ? 0.05 : 0.15;
             const discountAmount = totalCost * discountRate;
-            const discountedPrice = totalCost * (weeks / 10) - discountAmount;
+
+            // Rabattierte Gesamtkosten
+            const discountedPrice = (totalCost * (weeks / 10)) - discountAmount;
+
+            // Kosten pro Pflanze berechnen
             const costPerPlant = discountedPrice / scaledPlants;
 
             return { discountedPrice, discountAmount, costPerPlant };
@@ -156,59 +142,18 @@
                 return;
             }
 
-            const scalingFactor = members / baseData.members;
             const plants = Math.ceil(members * baseData.plantsPerMember);
-            let totalCost = 0;
-            let recommendation = "<h3>Empfohlene Produkte:</h3><table>";
-            recommendation += "<tr><th>Produkt</th><th>Optimale Größe</th><th>Anzahl</th><th>Preis (€)</th><th>10-Wochen Verbrauch</th><th>Gesamtkosten (€)</th></tr>";
-
-            // Berechnung für normale Produkte
-            baseData.products.forEach(product => {
-                const usage = product.baseUsage * scalingFactor;
-                const { bestOption, unitsNeeded } = calculateOptimalSize(product, usage);
-                const cost = unitsNeeded * bestOption.price;
-                totalCost += cost;
-
-                recommendation += `<tr>
-                    <td>${product.name}</td>
-                    <td>${bestOption.size} L</td>
-                    <td>${unitsNeeded}</td>
-                    <td>${formatNumber(bestOption.price)}</td>
-                    <td>${usage.toFixed(2)} L</td>
-                    <td>${formatNumber(cost)}</td>
-                </tr>`;
-            });
-
-            // Berechnung für Produkte pro Pflanze
-            baseData.perPlantProducts.forEach(product => {
-                const unitsNeeded = plants; // Genau ein Stück pro Pflanze
-                const cost = unitsNeeded * product.price;
-                totalCost += cost;
-
-                recommendation += `<tr>
-                    <td>${product.name}</td>
-                    <td>-</td>
-                    <td>${unitsNeeded}</td>
-                    <td>${formatNumber(product.price)}</td>
-                    <td>${unitsNeeded} Stück</td>
-                    <td>${formatNumber(cost)}</td>
-                </tr>`;
-            });
-
-            recommendation += "</table>";
-            recommendation += `<h3>Gesamtkosten für 10 Wochen: ${formatNumber(totalCost)}</h3>`;
-            recommendation += `<h3>Abo-Optionen:</h3>`;
-
-            // Rabatte berechnen und anzeigen
+            const totalCost = 20000; // Beispiel-Kosten aus vorheriger Berechnung
             const tenWeeks = calculateDiscountedPrice(totalCost, 10, plants);
             const twentyWeeks = calculateDiscountedPrice(totalCost, 20, plants);
             const fortyWeeks = calculateDiscountedPrice(totalCost, 40, plants);
 
-            recommendation += `<p><strong>Small (10 Wochen):</strong> 3% Rabatt - ${formatNumber(tenWeeks.discountedPrice)} (Ersparnis: ${formatNumber(tenWeeks.discountAmount)}) - Kosten pro Pflanze: ${formatNumber(tenWeeks.costPerPlant)}</p>`;
-            recommendation += `<p><strong>Medium (20 Wochen):</strong> 5% Rabatt - ${formatNumber(twentyWeeks.discountedPrice)} (Ersparnis: ${formatNumber(twentyWeeks.discountAmount)}) - Kosten pro Pflanze: ${formatNumber(twentyWeeks.costPerPlant)}</p>`;
-            recommendation += `<p><strong>Large (40 Wochen):</strong> 15% Rabatt - ${formatNumber(fortyWeeks.discountedPrice)} (Ersparnis: ${formatNumber(fortyWeeks.discountAmount)}) - Kosten pro Pflanze: ${formatNumber(fortyWeeks.costPerPlant)}</p>`;
-
-            output.innerHTML = recommendation;
+            output.innerHTML = `
+                <h3>Abo-Optionen:</h3>
+                <p><strong>10 Wochen:</strong> ${formatNumber(tenWeeks.discountedPrice)} (Ersparnis: ${formatNumber(tenWeeks.discountAmount)}) - Kosten pro Pflanze: ${formatNumber(tenWeeks.costPerPlant)}</p>
+                <p><strong>20 Wochen:</strong> ${formatNumber(twentyWeeks.discountedPrice)} (Ersparnis: ${formatNumber(twentyWeeks.discountAmount)}) - Kosten pro Pflanze: ${formatNumber(twentyWeeks.costPerPlant)}</p>
+                <p><strong>40 Wochen:</strong> ${formatNumber(fortyWeeks.discountedPrice)} (Ersparnis: ${formatNumber(fortyWeeks.discountAmount)}) - Kosten pro Pflanze: ${formatNumber(fortyWeeks.costPerPlant)}</p>
+            `;
         }
     </script>
 </body>
