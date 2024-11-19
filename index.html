@@ -130,7 +130,7 @@
             return { bestOption, unitsNeeded };
         }
 
-        function calculateDiscountedPrice(totalCost, weeks, plants) {
+        function calculateDiscountedPrice(totalCost, weeks, plantsPerCycle) {
             let discountRate = 0;
             if (weeks === 10) discountRate = 0.03;
             else if (weeks === 20) discountRate = 0.05;
@@ -138,7 +138,10 @@
 
             const discountAmount = totalCost * discountRate;
             const discountedPrice = totalCost * weeks / 10 - discountAmount;
-            const costPerPlant = discountedPrice / plants;
+
+            // Pflanzenanzahl an die Zyklusdauer anpassen
+            const scaledPlants = plantsPerCycle * (weeks / 10);
+            const costPerPlant = discountedPrice / scaledPlants;
 
             return { discountedPrice, discountAmount, costPerPlant };
         }
