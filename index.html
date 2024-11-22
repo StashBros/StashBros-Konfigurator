@@ -91,7 +91,7 @@
         }
 
         function optimizeCombination(combination, sizes, prices) {
-            sizes.sort((a, b) => b - a);
+            sizes.sort((a, b) => b - a); // Sortiere von groß nach klein
             const optimized = [];
             let carryOver = combination.reduce((sum, item) => sum + item.units * item.size, 0);
 
@@ -127,20 +127,22 @@
                 let result = [];
                 let remainder = totalUsage;
 
+                // Berechnung der Hauptkombination
                 for (let i = 0; i < product.sizes.length; i++) {
                     const size = product.sizes[i];
                     const price = product.prices[i];
-                    const units = Math.floor(remainder / size);
+                    const units = Math.floor(remainder / size); // Berechnung der Anzahl größerer Einheiten
                     if (units > 0) {
                         result.push({ size, price, units });
-                        remainder = parseFloat((remainder % size).toFixed(2));
+                        remainder = parseFloat((remainder - units * size).toFixed(2)); // Aktualisierung des Rests
                     }
                 }
 
+                // Verarbeitung des Restverbrauchs mit kleinsten Einheiten
                 if (remainder > 0) {
                     const smallestSize = product.sizes[product.sizes.length - 1];
                     const smallestPrice = product.prices[product.sizes.length - 1];
-                    const units = Math.ceil(remainder / smallestSize);
+                    const units = Math.ceil(remainder / smallestSize); // Rundung nach oben
                     result.push({ size: smallestSize, price: smallestPrice, units });
                 }
 
