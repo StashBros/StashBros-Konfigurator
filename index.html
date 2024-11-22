@@ -133,7 +133,8 @@
             const ratio = members / data.members;
             const perPlantCount = Math.ceil(members * (1120 / data.members));
             const recommendations = data.products.map(product => {
-                const totalUsage = product.baseUsage * ratio;
+                // Rundung der Gesamtverbrauchsmenge auf zwei Dezimalstellen
+                const totalUsage = parseFloat((product.baseUsage * ratio).toFixed(2));
                 const result = [];
                 let remainder = totalUsage;
 
@@ -143,7 +144,7 @@
                     const units = Math.floor(remainder / size);
                     if (units > 0) {
                         result.push({ size, price, units });
-                        remainder %= size;
+                        remainder = parseFloat((remainder % size).toFixed(2));
                     }
                 }
 
