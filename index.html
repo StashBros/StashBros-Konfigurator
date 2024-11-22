@@ -132,21 +132,20 @@
 
         function calculateSubscriptionOptions(totalCost, plants) {
             const options = [
-                { weeks: 10, discount: 0.0196 },
-                { weeks: 20, discount: 0.0667 },
-                { weeks: 40, discount: 0.1334 }
+                { weeks: 10, discount: 0.0196, months: 2.5 },
+                { weeks: 20, discount: 0.0667, months: 5 },
+                { weeks: 40, discount: 0.1334, months: 10 }
             ];
 
             return options.map(option => {
-                const scaledCost = totalCost;
-                const discountAmount = scaledCost * option.discount;
-                const discountedPrice = scaledCost - discountAmount;
+                const discountAmount = totalCost * option.discount;
+                const discountedPrice = totalCost - discountAmount;
 
                 return {
                     weeks: option.weeks,
                     discountedPrice,
                     discountAmount,
-                    monthlyCost: discountedPrice / (option.weeks / 4.35),
+                    monthlyCost: discountedPrice / option.months,
                     costPerPlant: discountedPrice / plants,
                     costPerGram: discountedPrice / (data.averageYield * plants)
                 };
