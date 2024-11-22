@@ -139,7 +139,15 @@
                 result.push({ size: smallestSize.size, price: smallestSize.price, units: 1 });
             }
 
-            return result;
+            return result.reduce((acc, curr) => {
+                const existing = acc.find(item => item.size === curr.size);
+                if (existing) {
+                    existing.units += curr.units;
+                } else {
+                    acc.push(curr);
+                }
+                return acc;
+            }, []);
         }
 
         function generateRecommendation() {
@@ -162,18 +170,27 @@
                 const usage = product.baseUsage * (members / baseData.members);
                 const optimalCombination = calculateOptimalCombination(product, usage);
 
+                let productTotalCost = 0;
+                let sizesDisplay = "";
+                let unitsDisplay = "";
+
                 optimalCombination.forEach(combination => {
                     const cost = combination.units * combination.price;
-                    totalCost10Weeks += cost;
-                    recommendation += `<tr>
-                        <td>${product.name}</td>
-                        <td>${combination.size} L</td>
-                        <td>${combination.units}</td>
-                        <td>${formatNumber(combination.price)}</td>
-                        <td>${usage.toFixed(2)} L</td>
-                        <td>${formatNumber(cost)}</td>
-                    </tr>`;
+                    productTotalCost += cost;
+                    sizesDisplay += `${combination.size} L<br>`;
+                    unitsDisplay += `${combination.units}<br>`;
                 });
+
+                totalCost10Weeks += productTotalCost;
+
+                recommendation += `<tr>
+                    <td>${product.name}</td>
+                    <td>${sizesDisplay}</td>
+                    <td>${unitsDisplay}</td>
+                    <td>${formatNumber(productTotalCost)}</td>
+                    <td>${usage.toFixed(2)} L</td>
+                    <td>${formatNumber(productTotalCost)}</td>
+                </tr>`;
             });
 
             baseData.perPlantProducts.forEach(product => {
