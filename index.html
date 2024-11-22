@@ -61,7 +61,7 @@
             text-align: left;
             font-size: 0.9rem;
             word-wrap: break-word;
-            max-width: 150px; /* Begrenze die maximale Breite für Zellen */
+            max-width: 150px;
         }
         th {
             background-color: #f2f2f2;
@@ -87,41 +87,6 @@
             color: #555;
             margin-top: 20px;
             font-style: italic;
-        }
-        @media (max-width: 768px) {
-            body {
-                font-size: 1rem;
-            }
-            h1 {
-                font-size: 1.2rem;
-            }
-            .container {
-                padding: 10px;
-            }
-            th, td {
-                padding: 6px;
-                font-size: 0.8rem;
-                max-width: 100px; /* Noch engere Begrenzung bei kleinen Geräten */
-            }
-            button {
-                font-size: 1rem;
-            }
-        }
-        @media (max-width: 480px) {
-            body {
-                font-size: 0.9rem;
-            }
-            h1 {
-                font-size: 1rem;
-            }
-            th, td {
-                font-size: 0.75rem;
-                max-width: 80px;
-            }
-            button {
-                padding: 8px;
-                font-size: 0.9rem;
-            }
         }
     </style>
 </head>
@@ -156,38 +121,55 @@
 
         const formatNumber = (number) => new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(number);
 
-        function calculateOptimalSize(product, usage) {
-            let bestOption = product.sizes[0];
-            let minCost = Infinity;
-            let unitsNeeded = 0;
+        function calculateOptimalCombination(product, usage) {
+            let remainingUsage = usage;
+            const result = [];
 
-            product.sizes.forEach(option => {
-                const units = Math.ceil(usage / option.size);
-                const cost = units * option.price;
+            product.sizes.sort((a, b) => b.size - a.size); // Sort sizes from largest to smallest
 
-                if (cost < minCost) {
-                    minCost = cost;
-                    bestOption = option;
-                    unitsNeeded = units;
+            for (const size of product.sizes) {
+                const units = Math.floor(remainingUsage / size.size);
+                if (units > 0) {
+                    result.push({ size: size.size, price: size.price, units });
+                    remainingUsage -= units * size.size;
                 }
-            });
+            }
 
-            return { bestOption, unitsNeeded };
+            // Ensure remaining usage is covered by the smallest available size
+            if (remainingUsage > 0) {
+                const smallestSize = product.sizes[product.sizes.length - 1];
+                result.push({ size: smallestSize.size, price: smallestSize.price, units: 1 });
+            }
+
+            return optimizeCombination(result, product.sizes);
         }
 
-        function calculateDiscountedPrice(totalCost10Weeks, weeks, plants10Weeks) {
-            const scaledPlants = plants10Weeks * (weeks / 10);
-            const scaledYield = scaledPlants * baseData.averageYield; // Gesamtertrag in Gramm
-            const scaledCost = totalCost10Weeks * (weeks / 10);
-            const discountRate = weeks === 10 ? 0.0196 : weeks === 20 ? 0.0667 : 0.1382;
-            const discountAmount = scaledCost * discountRate;
-            const discountedPrice = scaledCost - discountAmount;
+        function optimizeCombination(combination, sizes) {
+            let needsOptimization = true;
 
-            const costPerPlant = discountedPrice / scaledPlants;
-            const costPerGram = discountedPrice / scaledYield;
-            const monthlyCost = discountedPrice / (weeks / 4.35);
+            while (needsOptimization) {
+                needsOptimization = false;
 
-            return { discountedPrice, discountAmount, costPerPlant, costPerGram, monthlyCost };
+                for (let i = 0; i < combination.length - 1; i++) {
+                    const current = combination[i];
+                    const next = combination[i + 1];
+
+                    if (
+                        current &&
+                        next &&
+                        current.size > next.size &&
+                        next.units >= current.size / next.size
+                    ) {
+                        next.units -= current.size / next.size;
+                        current.units--;
+                        next.units = Math.floor(next.units);
+                        if (next.units <= 0) combination.splice(i + 1, 1);
+                        needsOptimization = true;
+                    }
+                }
+            }
+
+            return combination.filter(item => item.units > 0);
         }
 
         function generateRecommendation() {
@@ -204,21 +186,34 @@
             let totalCost10Weeks = 0;
 
             let recommendation = "<h3>Empfohlene Produkte:</h3><div class='table-wrapper'><table>";
-            recommendation += "<tr><th>Produkt</th><th>Optimale Größe</th><th>Anzahl</th><th>Preis (€)</th><th>10-Wochen Verbrauch</th><th>Gesamtkosten (€)</th></tr>";
+            recommendation += "<tr><th>Produkt</th><th>Optimale Größe</th><th>Anzahl</th><th>Einzelpreis (€)</th><th>10-Wochen Verbrauch</th><th>Gesamtkosten (€)</th></tr>";
 
             baseData.products.forEach(product => {
                 const usage = product.baseUsage * (members / baseData.members);
-                const { bestOption, unitsNeeded } = calculateOptimalSize(product, usage);
-                const cost = unitsNeeded * bestOption.price;
-                totalCost10Weeks += cost;
+                const optimalCombination = calculateOptimalCombination(product, usage);
+
+                let productTotalCost = 0;
+                let sizesDisplay = "";
+                let unitsDisplay = "";
+                let pricesDisplay = "";
+
+                optimalCombination.forEach(combination => {
+                    const cost = combination.units * combination.price;
+                    productTotalCost += cost;
+                    sizesDisplay += `${combination.size} L<br>`;
+                    unitsDisplay += `${combination.units}<br>`;
+                    pricesDisplay += `${formatNumber(combination.price)}<br>`;
+                });
+
+                totalCost10Weeks += productTotalCost;
 
                 recommendation += `<tr>
                     <td>${product.name}</td>
-                    <td>${bestOption.size} L</td>
-                    <td>${unitsNeeded}</td>
-                    <td>${formatNumber(bestOption.price)}</td>
+                    <td>${sizesDisplay}</td>
+                    <td>${unitsDisplay}</td>
+                    <td>${pricesDisplay}</td>
                     <td>${usage.toFixed(2)} L</td>
-                    <td>${formatNumber(cost)}</td>
+                    <td>${formatNumber(productTotalCost)}</td>
                 </tr>`;
             });
 
@@ -239,55 +234,6 @@
 
             recommendation += "</table></div>";
             recommendation += `<h3>Gesamtkosten für 10 Wochen: ${formatNumber(totalCost10Weeks)}</h3>`;
-
-            recommendation += `<h3>Abo-Optionen:</h3><div class='table-wrapper'><table>`;
-            recommendation += `
-                <tr>
-                    <th>Abo-Modell</th>
-                    <th>Rabatt</th>
-                    <th>Gesamtkosten (€)</th>
-                    <th>Monatliche Kosten (€)</th>
-                    <th>Kosten/Gramm (€)</th>
-                    <th>Kosten/Pflanze (€)</th>
-                    <th>Ersparnis (€)</th>
-                </tr>`;
-
-            const tenWeeks = calculateDiscountedPrice(totalCost10Weeks, 10, plants10Weeks);
-            const twentyWeeks = calculateDiscountedPrice(totalCost10Weeks, 20, plants10Weeks);
-            const fortyWeeks = calculateDiscountedPrice(totalCost10Weeks, 40, plants10Weeks);
-
-            recommendation += `
-                <tr>
-                    <td>10 Wochen</td>
-                    <td>1,96 %</td>
-                    <td>${formatNumber(tenWeeks.discountedPrice)}</td>
-                    <td>${formatNumber(tenWeeks.monthlyCost)}</td>
-                    <td>${formatNumber(tenWeeks.costPerGram)}</td>
-                    <td>${formatNumber(tenWeeks.costPerPlant)}</td>
-                    <td>${formatNumber(tenWeeks.discountAmount)}</td>
-                </tr>
-                <tr>
-                    <td>20 Wochen</td>
-                    <td>6,67 %</td>
-                    <td>${formatNumber(twentyWeeks.discountedPrice)}</td>
-                    <td>${formatNumber(twentyWeeks.monthlyCost)}</td>
-                    <td>${formatNumber(twentyWeeks.costPerGram)}</td>
-                    <td>${formatNumber(twentyWeeks.costPerPlant)}</td>
-                    <td>${formatNumber(twentyWeeks.discountAmount)}</td>
-                </tr>
-                <tr>
-                    <td>40 Wochen</td>
-                    <td>13,82 %</td>
-                    <td>${formatNumber(fortyWeeks.discountedPrice)}</td>
-                    <td>${formatNumber(fortyWeeks.monthlyCost)}</td>
-                    <td>${formatNumber(fortyWeeks.costPerGram)}</td>
-                    <td>${formatNumber(fortyWeeks.costPerPlant)}</td>
-                    <td>${formatNumber(fortyWeeks.discountAmount)}</td>
-                </tr>
-            `;
-            recommendation += "</table></div>";
-
-            recommendation += `<p class="footnote">* Durchschnittlicher Ertrag pro Pflanze: ${baseData.averageYield.toFixed(2)} Gramm</p>`;
             output.innerHTML = recommendation;
         }
     </script>
