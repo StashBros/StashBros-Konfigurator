@@ -146,6 +146,21 @@
 
                 result = optimizeCombination(result, product.sizes, product.prices);
 
+                let calculatedTotal = result.reduce((sum, item) => sum + item.units * item.size, 0);
+                calculatedTotal = parseFloat(calculatedTotal.toFixed(2)); // Präzise Rundung der Summe
+
+                if (calculatedTotal > totalUsage) {
+                    let excess = parseFloat((calculatedTotal - totalUsage).toFixed(2));
+                    for (let i = result.length - 1; i >= 0 && excess > 0; i--) {
+                        const item = result[i];
+                        const removableUnits = Math.min(item.units, Math.ceil(excess / item.size));
+                        item.units -= removableUnits;
+                        excess -= removableUnits * item.size;
+                        excess = parseFloat(excess.toFixed(2)); // Rest korrekt runden
+                    }
+                    result = result.filter(item => item.units > 0);
+                }
+
                 const totalCost = result.reduce((sum, item) => sum + item.units * item.price, 0);
                 return { name: product.name, totalUsage: `${totalUsage} L`, combination: result, totalCost };
             });
@@ -163,29 +178,7 @@
             return recommendations;
         }
 
-        function calculateSubscriptionOptions(totalCost, plants) {
-            const options = [
-                { weeks: 10, discount: 0.0196, months: 2.5 },
-                { weeks: 20, discount: 0.0667, months: 5 },
-                { weeks: 40, discount: 0.1334, months: 10 }
-            ];
-
-            return options.map(option => {
-                const discountAmount = totalCost * option.discount;
-                const discountedPrice = totalCost - discountAmount;
-
-                return {
-                    weeks: option.weeks,
-                    discountedPrice,
-                    discountAmount,
-                    monthlyCost: discountedPrice / option.months,
-                    costPerPlant: discountedPrice / plants,
-                    costPerGram: discountedPrice / (data.averageYield * plants)
-                };
-            });
-        }
-
-        function displayRecommendations(recommendations, subscriptionOptions, totalCost) {
+        function displayRecommendations(recommendations) {
             const output = document.getElementById("output");
             let html = "<h3>Empfohlene Produkte</h3>";
             html += `<table>
@@ -219,38 +212,6 @@
             });
 
             html += "</tbody></table>";
-            html += `<h3>Gesamtkosten: ${formatNumber(totalCost)}</h3>`;
-
-            html += "<h3>Abo-Optionen</h3>";
-            html += `<table>
-                <thead>
-                    <tr>
-                        <th>Wochen</th>
-                        <th>Rabatt</th>
-                        <th>Rabattierter Gesamtpreis (€)</th>
-                        <th>Monatliche Kosten (€)</th>
-                        <th>Kosten/Gramm (€)</th>
-                        <th>Kosten/Pflanze (€)</th>
-                        <th>Ersparnis (€)</th>
-                    </tr>
-                </thead>
-                <tbody>`;
-
-            subscriptionOptions.forEach(sub => {
-                html += `
-                    <tr>
-                        <td>${sub.weeks} Wochen</td>
-                        <td>${(sub.discountAmount / totalCost * 100).toFixed(2)}%</td>
-                        <td>${formatNumber(sub.discountedPrice)}</td>
-                        <td>${formatNumber(sub.monthlyCost)}</td>
-                        <td>${formatNumber(sub.costPerGram)}</td>
-                        <td>${formatNumber(sub.costPerPlant)}</td>
-                        <td>${formatNumber(sub.discountAmount)}</td>
-                    </tr>`;
-            });
-
-            html += "</tbody></table>";
-            html += `<p class="footnote">* Durchschnittlicher Ertrag pro Pflanze: ${data.averageYield.toFixed(2)} Gramm</p>`;
             output.innerHTML = html;
         }
 
@@ -262,11 +223,7 @@
             }
 
             const recommendations = calculateRecommendations(members);
-            const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
-            const plants = Math.ceil(members * (1120 / data.members));
-            const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants);
-
-            displayRecommendations(recommendations, subscriptionOptions, totalCost);
+            displayRecommendations(recommendations);
         });
     </script>
 </body>
