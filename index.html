@@ -145,26 +145,31 @@
         }
 
         function optimizeCombination(combination, sizes) {
-            const updatedCombination = [...combination];
             let needsOptimization = true;
 
             while (needsOptimization) {
                 needsOptimization = false;
 
-                for (let i = 0; i < updatedCombination.length - 1; i++) {
-                    const current = updatedCombination[i];
-                    const next = updatedCombination[i + 1];
+                for (let i = 0; i < combination.length - 1; i++) {
+                    const current = combination[i];
+                    const next = combination[i + 1];
 
-                    if (current && next && current.size > next.size && next.units >= current.size / next.size) {
-                        current.units -= 1;
+                    if (
+                        current &&
+                        next &&
+                        current.size > next.size &&
+                        next.units >= current.size / next.size
+                    ) {
                         next.units -= current.size / next.size;
+                        current.units--;
                         next.units = Math.floor(next.units);
+                        if (next.units <= 0) combination.splice(i + 1, 1);
                         needsOptimization = true;
                     }
                 }
             }
 
-            return updatedCombination.filter(item => item.units > 0);
+            return combination.filter(item => item.units > 0);
         }
 
         function generateRecommendation() {
