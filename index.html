@@ -51,7 +51,7 @@
         const baseData = {
             members: 500,
             plantsPerMember: 1120 / 500,
-            averageYieldPerPlant: 55.8,
+            averageYield: 66.96, // Durchschnittsertrag in Gramm pro Pflanze
             products: [
                 { name: "Coco", baseUsage: 168, sizes: [{ size: 1, price: 6.15 }, { size: 5, price: 17.05 }, { size: 10, price: 26.40 }, { size: 20, price: 46.30 }] },
                 { name: "TNT Complex", baseUsage: 61.6, sizes: [{ size: 0.5, price: 5.15 }, { size: 1, price: 6.90 }, { size: 5, price: 18.45 }, { size: 10, price: 30.00 }, { size: 20, price: 51.55 }] },
@@ -89,7 +89,7 @@
 
         function calculateDiscountedPrice(totalCost10Weeks, weeks, plants10Weeks) {
             const scaledPlants = plants10Weeks * (weeks / 10);
-            const scaledYield = scaledPlants * baseData.averageYieldPerPlant;
+            const scaledYield = scaledPlants * baseData.averageYield; // Gesamtertrag in Gramm
             const scaledCost = totalCost10Weeks * (weeks / 10);
             const discountRate = weeks === 10 ? 0.0196 : weeks === 20 ? 0.0667 : 0.1382;
             const discountAmount = scaledCost * discountRate;
@@ -196,7 +196,7 @@
                     </tr>
                 </table>`;
 
-            recommendation += `<p class="footnote">* Durchschnittlicher Ertrag pro Pflanze: ${baseData.averageYieldPerPlant.toFixed(2)} Gramm</p>`;
+            recommendation += `<p class="footnote">* Durchschnittlicher Ertrag pro Pflanze: ${baseData.averageYield.toFixed(2)} Gramm</p>`;
 
             output.innerHTML = recommendation;
         }
