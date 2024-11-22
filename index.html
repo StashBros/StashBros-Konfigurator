@@ -71,6 +71,9 @@
             border-radius: 5px;
             cursor: pointer;
         }
+        button:hover {
+            background-color: #45a049;
+        }
         .error-message {
             color: red;
             font-size: 0.9em;
@@ -94,8 +97,6 @@
     <script>
         const baseData = {
             members: 500,
-            plantsPerMember: 1120 / 500,
-            averageYield: 66.96, // Durchschnittsertrag in Gramm pro Pflanze
             products: [
                 { name: "Coco", baseUsage: 168, sizes: [{ size: 1, price: 6.15 }, { size: 5, price: 17.05 }, { size: 10, price: 26.40 }, { size: 20, price: 46.30 }] },
                 { name: "TNT Complex", baseUsage: 61.6, sizes: [{ size: 0.5, price: 5.15 }, { size: 1, price: 6.90 }, { size: 5, price: 18.45 }, { size: 10, price: 30.00 }, { size: 20, price: 51.55 }] },
