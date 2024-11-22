@@ -89,12 +89,12 @@
             ]
         };
 
-        function optimizeCombination(combination, sizes) {
-            // Sort by size descending for easier optimization
+        function optimizeCombination(combination, sizes, prices) {
             sizes.sort((a, b) => b - a);
             const optimized = [];
             let carryOver = 0;
 
+            // Sum up all units of the combination to check for possible optimizations
             combination.forEach(item => {
                 carryOver += item.units * item.size;
             });
@@ -102,13 +102,22 @@
             for (const size of sizes) {
                 if (carryOver >= size) {
                     const units = Math.floor(carryOver / size);
-                    optimized.push({ size, units });
+                    optimized.push({
+                        size,
+                        units,
+                        price: prices[sizes.indexOf(size)]
+                    });
                     carryOver %= size;
                 }
             }
 
             if (carryOver > 0) {
-                optimized.push({ size: sizes[sizes.length - 1], units: 1 });
+                const smallestSize = sizes[sizes.length - 1];
+                optimized.push({
+                    size: smallestSize,
+                    units: 1,
+                    price: prices[sizes.indexOf(smallestSize)]
+                });
             }
 
             return optimized;
@@ -139,12 +148,9 @@
                 }
 
                 // Optimize the combination by grouping smaller sizes
-                const optimizedCombination = optimizeCombination(result, product.sizes);
+                const optimizedCombination = optimizeCombination(result, product.sizes, product.prices);
 
-                const totalCost = optimizedCombination.reduce((sum, item) => {
-                    const priceIndex = product.sizes.indexOf(item.size);
-                    return sum + (item.units * product.prices[priceIndex]);
-                }, 0);
+                const totalCost = optimizedCombination.reduce((sum, item) => sum + (item.units * item.price), 0);
 
                 return { name: product.name, totalUsage: totalUsage.toFixed(2) + " L", combination: optimizedCombination, totalCost };
             });
@@ -204,7 +210,7 @@
                     `${comb.units} x ${comb.size}${rec.name === "Growbag" || rec.name === "Cube" ? " Stück" : " L"}`
                 ).join("<br>");
                 const priceDetails = rec.combination.map(comb => 
-                    `${comb.units} x ${comb.size} L`
+                    `${comb.price.toFixed(2)} €`
                 ).join("<br>");
 
                 html += `
