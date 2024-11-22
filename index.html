@@ -90,35 +90,6 @@
             }).format(value);
         }
 
-        function optimizeCombination(combination, sizes, prices) {
-            sizes.sort((a, b) => b - a); // Sortiere von groß nach klein
-            const optimized = [];
-            let carryOver = combination.reduce((sum, item) => sum + item.units * item.size, 0);
-
-            for (const size of sizes) {
-                if (carryOver >= size) {
-                    const units = Math.floor(carryOver / size);
-                    optimized.push({
-                        size,
-                        units,
-                        price: prices[sizes.indexOf(size)]
-                    });
-                    carryOver %= size;
-                }
-            }
-
-            if (carryOver > 0) {
-                const smallestSize = sizes[sizes.length - 1];
-                optimized.push({
-                    size: smallestSize,
-                    units: Math.ceil(carryOver / smallestSize),
-                    price: prices[sizes.indexOf(smallestSize)]
-                });
-            }
-
-            return optimized;
-        }
-
         function calculateRecommendations(members) {
             const ratio = members / data.members;
             const perPlantCount = Math.ceil(members * (1120 / data.members));
@@ -127,43 +98,37 @@
                 let result = [];
                 let remainder = totalUsage;
 
-                // Berechnung der Hauptkombination
                 for (let i = 0; i < product.sizes.length; i++) {
                     const size = product.sizes[i];
                     const price = product.prices[i];
-                    const units = Math.floor(remainder / size); // Berechnung der Anzahl größerer Einheiten
+                    const units = Math.floor(remainder / size);
                     if (units > 0) {
                         result.push({ size, price, units });
-                        remainder = parseFloat((remainder - units * size).toFixed(2)); // Aktualisierung des Rests
+                        remainder = parseFloat((remainder - units * size).toFixed(2));
                     }
                 }
 
-                // Verarbeitung des Restverbrauchs mit kleinsten Einheiten
                 if (remainder > 0) {
                     const smallestSize = product.sizes[product.sizes.length - 1];
                     const smallestPrice = product.prices[product.sizes.length - 1];
-                    const units = Math.ceil(remainder / smallestSize); // Rundung nach oben
+                    const units = Math.ceil(remainder / smallestSize);
                     result.push({ size: smallestSize, price: smallestPrice, units });
                 }
 
-                result = optimizeCombination(result, product.sizes, product.prices);
-
-                let calculatedTotal = result.reduce((sum, item) => sum + item.units * item.size, 0);
-                calculatedTotal = parseFloat(calculatedTotal.toFixed(2)); // Präzise Rundung der Summe
-
-                if (calculatedTotal > totalUsage) {
-                    let excess = parseFloat((calculatedTotal - totalUsage).toFixed(2));
-                    for (let i = result.length - 1; i >= 0 && excess > 0; i--) {
-                        const item = result[i];
-                        const removableUnits = Math.min(item.units, Math.ceil(excess / item.size));
-                        item.units -= removableUnits;
-                        excess -= removableUnits * item.size;
-                        excess = parseFloat(excess.toFixed(2)); // Rest korrekt runden
+                if (product.name === "SuperVit") {
+                    let totalCalculated = result.reduce((sum, item) => sum + item.units * item.size, 0);
+                    while (totalCalculated > totalUsage) {
+                        const lastItem = result[result.length - 1];
+                        if (lastItem.size === product.sizes[product.sizes.length - 1]) {
+                            lastItem.units -= 1;
+                            totalCalculated -= lastItem.size;
+                            if (lastItem.units === 0) result.pop();
+                        }
                     }
-                    result = result.filter(item => item.units > 0);
                 }
 
                 const totalCost = result.reduce((sum, item) => sum + item.units * item.price, 0);
+
                 return { name: product.name, totalUsage: `${totalUsage} L`, combination: result, totalCost };
             });
 
