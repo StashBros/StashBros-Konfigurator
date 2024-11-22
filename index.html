@@ -124,9 +124,12 @@
         function calculateOptimalCombination(product, usage) {
             let remainingUsage = usage;
             const result = [];
+            const maxHalfLiterUnits = 1;
+
             product.sizes.sort((a, b) => b.size - a.size); // Sort sizes from largest to smallest
 
             for (const size of product.sizes) {
+                if (size.size === 0.5 && remainingUsage > size.size) continue; // Skip multiple 0.5 L units
                 const units = Math.floor(remainingUsage / size.size);
                 if (units > 0) {
                     result.push({ size: size.size, price: size.price, units });
@@ -134,15 +137,12 @@
                 }
             }
 
-            // Check if remaining usage can be handled by combining larger sizes
-            product.sizes.forEach(size => {
-                const additionalUnits = Math.ceil(remainingUsage / size.size);
-                const newTotal = additionalUnits * size.size;
-                if (newTotal >= remainingUsage) {
-                    result.push({ size: size.size, price: size.price, units: additionalUnits });
-                    remainingUsage = 0;
+            if (remainingUsage > 0) {
+                const smallestSize = product.sizes.find(size => size.size === 0.5);
+                if (smallestSize) {
+                    result.push({ size: smallestSize.size, price: smallestSize.price, units: 1 });
                 }
-            });
+            }
 
             return result.reduce((acc, curr) => {
                 const existing = acc.find(item => item.size === curr.size);
