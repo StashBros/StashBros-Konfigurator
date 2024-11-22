@@ -94,40 +94,29 @@
             const perPlantCount = Math.ceil(members * (1120 / data.members));
             const recommendations = data.products.map(product => {
                 const totalUsage = product.baseUsage * ratio;
-                let remainingUsage = totalUsage;
-
-                // Sortiere die Größen absteigend nach Volumen
-                const sizesWithPrices = product.sizes.map((size, index) => ({
-                    size,
-                    price: product.prices[index]
-                })).sort((a, b) => b.size - a.size);
-
                 const result = [];
+                let remainder = totalUsage;
 
-                for (const { size, price } of sizesWithPrices) {
-                    const units = Math.floor(remainingUsage / size);
+                for (let i = 0; i < product.sizes.length; i++) {
+                    const size = product.sizes[i];
+                    const price = product.prices[i];
+                    const units = Math.floor(remainder / size);
                     if (units > 0) {
                         result.push({ size, price, units });
-                        remainingUsage -= units * size;
+                        remainder %= size;
                     }
                 }
 
-                // Falls noch eine Restmenge übrig ist, wähle die nächstbeste Größe
-                if (remainingUsage > 0) {
-                    for (const { size, price } of sizesWithPrices) {
-                        if (size >= remainingUsage) {
-                            result.push({ size, price, units: 1 });
-                            remainingUsage = 0;
-                            break;
-                        }
-                    }
+                if (remainder > 0) {
+                    const smallestSize = product.sizes[product.sizes.length - 1];
+                    const smallestPrice = product.prices[product.sizes.length - 1];
+                    result.push({ size: smallestSize, price: smallestPrice, units: 1 });
                 }
 
                 const totalCost = result.reduce((sum, item) => sum + (item.units * item.price), 0);
                 return { name: product.name, totalUsage: totalUsage.toFixed(2) + " L", combination: result, totalCost };
             });
 
-            // Verarbeite Produkte pro Pflanze (Growbag und Cube)
             data.perPlantProducts.forEach(product => {
                 const totalCost = perPlantCount * product.price;
                 recommendations.push({
