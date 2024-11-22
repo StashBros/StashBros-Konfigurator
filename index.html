@@ -68,6 +68,25 @@
 
         const formatNumber = (number) => new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(number);
 
+        function calculateOptimalSize(product, usage) {
+            let bestOption = product.sizes[0];
+            let minCost = Infinity;
+            let unitsNeeded = 0;
+
+            product.sizes.forEach(option => {
+                const units = Math.ceil(usage / option.size);
+                const cost = units * option.price;
+
+                if (cost < minCost) {
+                    minCost = cost;
+                    bestOption = option;
+                    unitsNeeded = units;
+                }
+            });
+
+            return { bestOption, unitsNeeded };
+        }
+
         function calculateDiscountedPrice(totalCost10Weeks, weeks, plants10Weeks) {
             const scaledPlants = plants10Weeks * (weeks / 10);
             const scaledYield = scaledPlants * baseData.averageYield; // Gesamtertrag in Gramm
@@ -76,7 +95,6 @@
             const discountAmount = scaledCost * discountRate;
             const discountedPrice = scaledCost - discountAmount;
 
-            // Neue Berechnung
             const costPerPlant = discountedPrice / scaledPlants;
             const costPerGram = discountedPrice / scaledYield;
             const monthlyCost = discountedPrice / (weeks / 4.35);
@@ -97,24 +115,48 @@
             const plants10Weeks = Math.ceil(members * baseData.plantsPerMember);
             let totalCost10Weeks = 0;
 
+            let recommendation = "<h3>Empfohlene Produkte:</h3><div class='table-wrapper'><table>";
+            recommendation += "<tr><th>Produkt</th><th>Optimale Größe</th><th>Anzahl</th><th>Preis (€)</th><th>10-Wochen Verbrauch</th><th>Gesamtkosten (€)</th></tr>";
+
             baseData.products.forEach(product => {
                 const usage = product.baseUsage * (members / baseData.members);
                 const { bestOption, unitsNeeded } = calculateOptimalSize(product, usage);
                 const cost = unitsNeeded * bestOption.price;
                 totalCost10Weeks += cost;
+
+                recommendation += `<tr>
+                    <td>${product.name}</td>
+                    <td>${bestOption.size} L</td>
+                    <td>${unitsNeeded}</td>
+                    <td>${formatNumber(bestOption.price)}</td>
+                    <td>${usage.toFixed(2)} L</td>
+                    <td>${formatNumber(cost)}</td>
+                </tr>`;
             });
 
             baseData.perPlantProducts.forEach(product => {
                 const unitsNeeded = plants10Weeks;
                 const cost = unitsNeeded * product.price;
                 totalCost10Weeks += cost;
+
+                recommendation += `<tr>
+                    <td>${product.name}</td>
+                    <td>-</td>
+                    <td>${unitsNeeded}</td>
+                    <td>${formatNumber(product.price)}</td>
+                    <td>${unitsNeeded} Stück</td>
+                    <td>${formatNumber(cost)}</td>
+                </tr>`;
             });
+
+            recommendation += "</table></div>";
+            recommendation += `<h3>Gesamtkosten für 10 Wochen: ${formatNumber(totalCost10Weeks)}</h3>`;
+            recommendation += `<h3>Abo-Optionen:</h3>`;
 
             const tenWeeks = calculateDiscountedPrice(totalCost10Weeks, 10, plants10Weeks);
             const twentyWeeks = calculateDiscountedPrice(totalCost10Weeks, 20, plants10Weeks);
             const fortyWeeks = calculateDiscountedPrice(totalCost10Weeks, 40, plants10Weeks);
 
-            let recommendation = `<h3>Abo-Optionen:</h3>`;
             recommendation += `
                 <table>
                     <tr>
@@ -154,6 +196,8 @@
                         <td>${formatNumber(fortyWeeks.discountAmount)}</td>
                     </tr>
                 </table>`;
+
+            recommendation += `<p class="footnote">* Durchschnittlicher Ertrag pro Pflanze: ${baseData.averageYield.toFixed(2)} Gramm</p>`;
 
             output.innerHTML = recommendation;
         }
