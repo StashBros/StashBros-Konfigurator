@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>StashBros Produkt-Konfigurator</title>
     <style>
         body {
@@ -24,180 +23,93 @@
             color: #333;
             font-size: 1.5rem;
         }
-        label, input, button {
-            display: block;
-            margin: 10px 0;
-        }
-        input {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        .output {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            background-color: #fff;
-            border-radius: 5px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
         table, th, td {
             border: 1px solid #ddd;
-        }
-        th, td {
+            border-collapse: collapse;
             padding: 8px;
             text-align: left;
-            font-size: 0.9rem;
         }
         th {
             background-color: #f2f2f2;
-            text-align: center;
-        }
-        button {
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .error-message {
-            color: red;
-            font-size: 0.9em;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>StashBros Produkt-Konfigurator</h1>
-        <p>Geben Sie die Mitgliederanzahl Ihres Cannabis Social Clubs ein, um die optimale Produktzusammenstellung, Verbrauch und Abo-Optionen zu berechnen.</p>
         <label for="members">Mitgliederanzahl:</label>
-        <input type="number" id="members" min="1" placeholder="z. B. 500">
+        <input type="number" id="members" min="1" max="100000" placeholder="z. B. 500">
         <button onclick="generateRecommendation()">Empfehlung anzeigen</button>
-        <div class="output" id="output"></div>
+        <div id="output"></div>
     </div>
     <script>
         const baseData = {
             members: 500,
             plantsPerMember: 1120 / 500,
+            averageYield: 66.96,
             products: [
-                { name: "Coco", baseUsage: 168, sizes: [{ size: 1, price: 6.15 }, { size: 5, price: 17.05 }, { size: 10, price: 26.40 }, { size: 20, price: 46.30 }] },
                 { name: "TNT Complex", baseUsage: 61.6, sizes: [{ size: 0.5, price: 5.15 }, { size: 1, price: 6.90 }, { size: 5, price: 18.45 }, { size: 10, price: 30.00 }, { size: 20, price: 51.55 }] }
             ]
         };
 
-        const formatNumber = (number) => new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(number);
+        const formatNumber = number => new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(number);
 
-        function calculateOptimalCombination(product, usage) {
+        function calculateOptimalSize(product, usage) {
+            let sizes = product.sizes.sort((a, b) => b.size - a.size);
             let remainingUsage = usage;
-            const result = [];
+            let selectedSizes = [];
+            let totalCost = 0;
 
-            // Step 1: Sort sizes (largest to smallest)
-            product.sizes.sort((a, b) => b.size - a.size);
-
-            // Step 2: Calculate initial combination
-            for (const size of product.sizes) {
-                const units = Math.floor(remainingUsage / size.size);
+            sizes.forEach(option => {
+                if (remainingUsage <= 0) return;
+                let units = Math.floor(remainingUsage / option.size);
                 if (units > 0) {
-                    result.push({ size: size.size, price: size.price, units });
-                    remainingUsage -= units * size.size;
+                    selectedSizes.push({ size: option.size, units, price: option.price });
+                    totalCost += units * option.price;
+                    remainingUsage -= units * option.size;
                 }
-            }
+            });
 
-            // Step 3: Add smallest size for remaining usage
             if (remainingUsage > 0) {
-                const smallestSize = product.sizes[product.sizes.length - 1];
-                result.push({
-                    size: smallestSize.size,
-                    price: smallestSize.price,
-                    units: Math.ceil(remainingUsage / smallestSize.size)
-                });
+                let smallestOption = sizes[sizes.length - 1];
+                let units = Math.ceil(remainingUsage / smallestOption.size);
+                selectedSizes.push({ size: smallestOption.size, units, price: smallestOption.price });
+                totalCost += units * smallestOption.price;
             }
 
-            // Step 4: Optimize combination
-            const optimizedCombination = optimizeCombination(result, product.sizes);
-
-            // Step 5: Ensure total coverage
-            return ensureCoverage(optimizedCombination, usage);
-        }
-
-        function optimizeCombination(combination, sizes) {
-            let needsFurtherOptimization = true;
-
-            while (needsFurtherOptimization) {
-                needsFurtherOptimization = false;
-
-                for (let i = combination.length - 1; i > 0; i--) {
-                    const current = combination[i];
-                    const previous = combination[i - 1];
-
-                    if (
-                        current.units > 1 &&
-                        current.size * 2 === previous.size // Check if 2 smaller units equal 1 larger unit
-                    ) {
-                        current.units -= 2;
-                        previous.units += 1;
-                        needsFurtherOptimization = true;
-                    }
-
-                    if (current.units <= 0) {
-                        combination.splice(i, 1);
-                    }
-                }
-            }
-
-            return combination.filter(item => item.units > 0);
-        }
-
-        function ensureCoverage(combination, requiredUsage) {
-            let totalCovered = combination.reduce((sum, item) => sum + item.size * item.units, 0);
-
-            while (totalCovered < requiredUsage) {
-                const smallestSize = combination[combination.length - 1];
-                smallestSize.units += 1;
-                totalCovered += smallestSize.size;
-            }
-
-            return combination;
+            return { selectedSizes, totalCost };
         }
 
         function generateRecommendation() {
-            const membersInput = document.getElementById("members").value;
-            const members = parseInt(membersInput);
+            const membersInput = document.getElementById("members");
+            const members = parseInt(membersInput.value);
+            const output = document.getElementById("output");
 
             if (!members || members <= 0) {
-                document.getElementById("output").innerHTML = "<p class='error-message'>Bitte geben Sie eine gültige Mitgliederanzahl ein.</p>";
+                output.innerHTML = "<p style='color: red;'>Bitte geben Sie eine gültige Mitgliederanzahl ein.</p>";
                 return;
             }
 
-            const plants10Weeks = members * baseData.plantsPerMember;
-            let output = "<h3>Empfohlene Produkte:</h3><table><tr><th>Produkt</th><th>Größen</th><th>Anzahl</th><th>Preis</th></tr>";
+            const plants10Weeks = Math.ceil(members * baseData.plantsPerMember);
+            let totalCost10Weeks = 0;
+
+            let recommendation = "<h3>Empfohlene Produkte:</h3><table><tr><th>Produkt</th><th>Kombinationen</th><th>Gesamtkosten (€)</th><th>10-Wochen Verbrauch</th></tr>";
 
             baseData.products.forEach(product => {
                 const usage = product.baseUsage * (members / baseData.members);
-                const optimalCombination = calculateOptimalCombination(product, usage);
+                const { selectedSizes, totalCost } = calculateOptimalSize(product, usage);
+                totalCost10Weeks += totalCost;
 
-                optimalCombination.forEach(combination => {
-                    output += `<tr>
-                        <td>${product.name}</td>
-                        <td>${combination.size} L</td>
-                        <td>${combination.units}</td>
-                        <td>${formatNumber(combination.price)}</td>
-                    </tr>`;
-                });
+                recommendation += `<tr>
+                    <td>${product.name}</td>
+                    <td>${selectedSizes.map(s => `${s.units}x ${s.size} L`).join(", ")}</td>
+                    <td>${formatNumber(totalCost)}</td>
+                    <td>${usage.toFixed(2)} L</td>
+                </tr>`;
             });
 
-            output += "</table>";
-            document.getElementById("output").innerHTML = output;
+            recommendation += `</table><h3>Gesamtkosten für 10 Wochen: ${formatNumber(totalCost10Weeks)}</h3>`;
+            output.innerHTML = recommendation;
         }
     </script>
 </body>
