@@ -89,6 +89,31 @@
             ]
         };
 
+        function optimizeCombination(combination, sizes) {
+            // Sort by size descending for easier optimization
+            sizes.sort((a, b) => b - a);
+            const optimized = [];
+            let carryOver = 0;
+
+            combination.forEach(item => {
+                carryOver += item.units * item.size;
+            });
+
+            for (const size of sizes) {
+                if (carryOver >= size) {
+                    const units = Math.floor(carryOver / size);
+                    optimized.push({ size, units });
+                    carryOver %= size;
+                }
+            }
+
+            if (carryOver > 0) {
+                optimized.push({ size: sizes[sizes.length - 1], units: 1 });
+            }
+
+            return optimized;
+        }
+
         function calculateRecommendations(members) {
             const ratio = members / data.members;
             const perPlantCount = Math.ceil(members * (1120 / data.members));
@@ -113,8 +138,15 @@
                     result.push({ size: smallestSize, price: smallestPrice, units: 1 });
                 }
 
-                const totalCost = result.reduce((sum, item) => sum + (item.units * item.price), 0);
-                return { name: product.name, totalUsage: totalUsage.toFixed(2) + " L", combination: result, totalCost };
+                // Optimize the combination by grouping smaller sizes
+                const optimizedCombination = optimizeCombination(result, product.sizes);
+
+                const totalCost = optimizedCombination.reduce((sum, item) => {
+                    const priceIndex = product.sizes.indexOf(item.size);
+                    return sum + (item.units * product.prices[priceIndex]);
+                }, 0);
+
+                return { name: product.name, totalUsage: totalUsage.toFixed(2) + " L", combination: optimizedCombination, totalCost };
             });
 
             data.perPlantProducts.forEach(product => {
@@ -172,7 +204,7 @@
                     `${comb.units} x ${comb.size}${rec.name === "Growbag" || rec.name === "Cube" ? " Stück" : " L"}`
                 ).join("<br>");
                 const priceDetails = rec.combination.map(comb => 
-                    `${comb.price.toFixed(2)} €`
+                    `${comb.units} x ${comb.size} L`
                 ).join("<br>");
 
                 html += `
