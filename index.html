@@ -125,7 +125,7 @@
             let remainingUsage = usage;
             const result = [];
 
-            product.sizes.sort((a, b) => b.size - a.size); // Sort sizes from largest to smallest
+            product.sizes.sort((a, b) => b.size - a.size);
 
             for (const size of product.sizes) {
                 const units = Math.floor(remainingUsage / size.size);
@@ -135,29 +135,17 @@
                 }
             }
 
-            // Always cover the remaining usage with the smallest possible unit
             if (remainingUsage > 0) {
-                const smallestFittingSize = product.sizes.find(size => size.size >= remainingUsage);
-                if (smallestFittingSize) {
-                    result.push({ size: smallestFittingSize.size, price: smallestFittingSize.price, units: 1 });
-                    remainingUsage -= smallestFittingSize.size;
-                } else {
-                    // If no single unit can cover, use the smallest available unit
-                    const smallestSize = product.sizes[product.sizes.length - 1];
-                    result.push({ size: smallestSize.size, price: smallestSize.price, units: 1 });
+                for (const size of product.sizes) {
+                    if (size.size >= remainingUsage) {
+                        result.push({ size: size.size, price: size.price, units: 1 });
+                        remainingUsage -= size.size;
+                        break;
+                    }
                 }
             }
 
-            // Verify if coverage is complete and adjust for exact match
-            let totalCovered = result.reduce((sum, item) => sum + item.size * item.units, 0);
-            if (totalCovered < usage) {
-                const smallestFittingSize = product.sizes.find(size => size.size >= usage - totalCovered);
-                if (smallestFittingSize) {
-                    result.push({ size: smallestFittingSize.size, price: smallestFittingSize.price, units: 1 });
-                }
-            }
-
-            return result.filter(item => item.units > 0); // Return only valid entries
+            return result.filter(item => item.units > 0);
         }
 
         function generateRecommendation() {
