@@ -178,7 +178,29 @@
             return recommendations;
         }
 
-        function displayRecommendations(recommendations) {
+        function calculateSubscriptionOptions(totalCost, plants) {
+            const options = [
+                { weeks: 10, discount: 0.0196, months: 2.5 },
+                { weeks: 20, discount: 0.0667, months: 5 },
+                { weeks: 40, discount: 0.1334, months: 10 }
+            ];
+
+            return options.map(option => {
+                const discountAmount = totalCost * option.discount;
+                const discountedPrice = totalCost - discountAmount;
+
+                return {
+                    weeks: option.weeks,
+                    discountedPrice,
+                    discountAmount,
+                    monthlyCost: discountedPrice / option.months,
+                    costPerPlant: discountedPrice / plants,
+                    costPerGram: discountedPrice / (data.averageYield * plants)
+                };
+            });
+        }
+
+        function displayRecommendations(recommendations, subscriptionOptions, totalCost) {
             const output = document.getElementById("output");
             let html = "<h3>Empfohlene Produkte</h3>";
             html += `<table>
@@ -212,6 +234,38 @@
             });
 
             html += "</tbody></table>";
+            html += `<h3>Gesamtkosten: ${formatNumber(totalCost)}</h3>`;
+
+            html += "<h3>Abo-Optionen</h3>";
+            html += `<table>
+                <thead>
+                    <tr>
+                        <th>Wochen</th>
+                        <th>Rabatt</th>
+                        <th>Rabattierter Gesamtpreis (€)</th>
+                        <th>Monatliche Kosten (€)</th>
+                        <th>Kosten/Gramm (€)</th>
+                        <th>Kosten/Pflanze (€)</th>
+                        <th>Ersparnis (€)</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            subscriptionOptions.forEach(sub => {
+                html += `
+                    <tr>
+                        <td>${sub.weeks} Wochen</td>
+                        <td>${(sub.discountAmount / totalCost * 100).toFixed(2)}%</td>
+                        <td>${formatNumber(sub.discountedPrice)}</td>
+                        <td>${formatNumber(sub.monthlyCost)}</td>
+                        <td>${formatNumber(sub.costPerGram)}</td>
+                        <td>${formatNumber(sub.costPerPlant)}</td>
+                        <td>${formatNumber(sub.discountAmount)}</td>
+                    </tr>`;
+            });
+
+            html += "</tbody></table>";
+            html += `<p class="footnote">* Durchschnittlicher Ertrag pro Pflanze: ${data.averageYield.toFixed(2)} Gramm</p>`;
             output.innerHTML = html;
         }
 
@@ -223,7 +277,11 @@
             }
 
             const recommendations = calculateRecommendations(members);
-            displayRecommendations(recommendations);
+            const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
+            const plants = Math.ceil(members * (1120 / data.members));
+            const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants);
+
+            displayRecommendations(recommendations, subscriptionOptions, totalCost);
         });
     </script>
 </body>
