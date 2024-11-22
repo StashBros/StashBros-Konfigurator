@@ -32,29 +32,24 @@
             border-radius: 5px;
             width: 100%;
         }
-        input.error {
-            border-color: red;
-        }
         .output {
             margin-top: 20px;
-        }
-        .error-message {
-            color: red;
         }
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
-        table, th, td {
-            border: 1px solid #ddd;
-        }
         th, td {
             padding: 8px;
             text-align: left;
+            border: 1px solid #ddd;
         }
         th {
             background-color: #f2f2f2;
+        }
+        .error-message {
+            color: red;
         }
         .footnote {
             margin-top: 20px;
@@ -75,7 +70,7 @@
     <script>
         const data = {
             members: 500,
-            averageYield: 66.96, // Durchschnittlicher Ertrag pro Pflanze
+            averageYield: 66.96,
             products: [
                 { name: "TNT Complex", baseUsage: 61.6, sizes: [20, 5, 1], prices: [51.55, 18.45, 6.90] },
                 { name: "Wurzel Complex", baseUsage: 61.6, sizes: [20, 5, 1], prices: [158.10, 56.60, 16.65] },
@@ -98,51 +93,65 @@
 
         function calculateRecommendations(members) {
             const ratio = members / data.members;
+            const recommendations = [];
             const perPlantCount = Math.ceil(members * (1120 / data.members));
-            const recommendations = data.products.map(product => {
-                const totalUsage = parseFloat((product.baseUsage * ratio).toFixed(2));
-                let result = [];
-                let remainder = totalUsage;
 
-                // Hauptkombinationen berechnen
-                for (let i = 0; i < product.sizes.length; i++) {
-                    const size = product.sizes[i];
-                    const price = product.prices[i];
+            data.products.forEach(product => {
+                const totalUsage = parseFloat((product.baseUsage * ratio).toFixed(2));
+                let remainder = totalUsage;
+                const result = [];
+
+                // Berechnung der Hauptkombination
+                product.sizes.forEach((size, index) => {
                     const units = Math.floor(remainder / size);
                     if (units > 0) {
-                        result.push({ size, price, units });
+                        result.push({
+                            size,
+                            units,
+                            price: product.prices[index]
+                        });
                         remainder = parseFloat((remainder % size).toFixed(2));
                     }
-                }
+                });
 
-                // Kleinste Größe hinzufügen, falls ein Rest übrig ist
+                // Hinzufügen der kleinsten Einheit, falls noch Rest übrig
                 if (remainder > 0) {
                     const smallestSize = product.sizes[product.sizes.length - 1];
                     const smallestPrice = product.prices[product.sizes.length - 1];
-                    const units = Math.ceil(remainder / smallestSize);
-                    result.push({ size: smallestSize, price: smallestPrice, units });
+                    result.push({
+                        size: smallestSize,
+                        units: Math.ceil(remainder / smallestSize),
+                        price: smallestPrice
+                    });
                 }
 
+                // Validierung: Berechneter Verbrauch muss mit dem angezeigten Verbrauch übereinstimmen
                 const calculatedTotal = result.reduce((sum, item) => sum + item.units * item.size, 0);
                 if (Math.abs(calculatedTotal - totalUsage) > 0.01) {
-                    console.error(
-                        `Warnung: Berechnung für ${product.name} ist ungenau. Erwartet: ${totalUsage}, Berechnet: ${calculatedTotal}`
+                    console.warn(
+                        `Warnung: Verbrauch von ${totalUsage} L für Produkt ${product.name} nicht exakt berechnet. Ergebnis: ${calculatedTotal} L.`
                     );
                 }
 
+                // Gesamtkosten berechnen
                 const totalCost = result.reduce((sum, item) => sum + item.units * item.price, 0);
-
-                return { name: product.name, totalUsage: `${totalUsage} L`, combination: result, totalCost };
+                recommendations.push({
+                    name: product.name,
+                    totalUsage: `${totalUsage} L`,
+                    combination: result,
+                    totalCost
+                });
             });
 
-            // Produkte pro Pflanze hinzufügen
+            // Per-Pflanze-Produkte hinzufügen
             data.perPlantProducts.forEach(product => {
-                const totalCost = perPlantCount * product.price;
                 recommendations.push({
                     name: product.name,
                     totalUsage: `${perPlantCount} Stück`,
-                    combination: [{ size: 1, price: product.price, units: perPlantCount }],
-                    totalCost
+                    combination: [
+                        { size: 1, units: perPlantCount, price: product.price }
+                    ],
+                    totalCost: perPlantCount * product.price
                 });
             });
 
@@ -157,21 +166,19 @@
                     <tr>
                         <th>Produkt</th>
                         <th>Verbrauch 10-Wochen</th>
-                        <th>Fassungsgrößen</th>
+                        <th>Kombination</th>
                         <th>Stückpreise (€)</th>
                         <th>Gesamtkosten (€)</th>
                     </tr>
                 </thead>
                 <tbody>`;
-
             recommendations.forEach(rec => {
-                const combinationDetails = rec.combination.map(comb => 
-                    `${comb.units} x ${comb.size}${rec.name === "Growbag" || rec.name === "Cube" ? " Stück" : " L"}`
-                ).join("<br>");
-                const priceDetails = rec.combination.map(comb => 
-                    formatNumber(comb.price)
-                ).join("<br>");
-
+                const combinationDetails = rec.combination
+                    .map(comb => `${comb.units} x ${comb.size} L`)
+                    .join("<br>");
+                const priceDetails = rec.combination
+                    .map(comb => formatNumber(comb.price))
+                    .join("<br>");
                 html += `
                     <tr>
                         <td>${rec.name}</td>
@@ -181,18 +188,16 @@
                         <td>${formatNumber(rec.totalCost)}</td>
                     </tr>`;
             });
-
             html += "</tbody></table>";
             output.innerHTML = html;
         }
 
         document.getElementById("calculate-btn").addEventListener("click", () => {
             const members = parseInt(document.getElementById("members").value, 10);
-            if (!members || members < 1) {
-                document.getElementById("output").innerHTML = '<p class="error-message">Bitte geben Sie eine gültige Mitgliederanzahl ein.</p>';
+            if (isNaN(members) || members <= 0) {
+                document.getElementById("output").innerHTML = "<p class='error-message'>Bitte geben Sie eine gültige Mitgliederanzahl ein.</p>";
                 return;
             }
-
             const recommendations = calculateRecommendations(members);
             displayRecommendations(recommendations);
         });
