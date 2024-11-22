@@ -135,7 +135,7 @@
                 }
             }
 
-            // If there is any remaining usage, add the smallest size to cover the rest
+            // Ensure remaining usage is covered by the smallest available size
             if (remainingUsage > 0) {
                 const smallestSize = product.sizes[product.sizes.length - 1];
                 result.push({ size: smallestSize.size, price: smallestSize.price, units: 1 });
