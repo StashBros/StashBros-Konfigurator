@@ -1,295 +1,223 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>StashBros Produkt-Konfigurator</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            line-height: 1.6;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-            font-size: 1.5rem;
-        }
-        label, input, button {
-            display: block;
-            margin: 10px 0;
-        }
-        input {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        input.error {
-            border: 2px solid red;
-        }
-        .output {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            background-color: #fff;
-            border-radius: 5px;
-        }
-        .table-wrapper {
-            overflow-x: auto;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        table, th, td {
-            border: 1px solid #ddd;
-        }
-        th, td {
-            padding: 8px;
-            text-align: left;
-            font-size: 0.9rem;
-            word-wrap: break-word;
-            max-width: 150px; /* Begrenze die maximale Breite für Zellen */
-        }
-        th {
-            background-color: #f2f2f2;
-            text-align: center;
-        }
-        button {
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .error-message {
-            color: red;
-            font-size: 0.9em;
-        }
-        .footnote {
-            font-size: 0.75em;
-            color: #555;
-            margin-top: 20px;
-            font-style: italic;
-        }
-        @media (max-width: 768px) {
-            body {
-                font-size: 1rem;
-            }
-            h1 {
-                font-size: 1.2rem;
-            }
-            .container {
-                padding: 10px;
-            }
-            th, td {
-                padding: 6px;
-                font-size: 0.8rem;
-                max-width: 100px; /* Noch engere Begrenzung bei kleinen Geräten */
-            }
-            button {
-                font-size: 1rem;
-            }
-        }
-        @media (max-width: 480px) {
-            body {
-                font-size: 0.9rem;
-            }
-            h1 {
-                font-size: 1rem;
-            }
-            th, td {
-                font-size: 0.75rem;
-                max-width: 80px;
-            }
-            button {
-                padding: 8px;
-                font-size: 0.9rem;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StashBros Produkt-Konfigurator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      padding: 0;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+    .responsive {
+      overflow-x: auto;
+    }
+    .form-group {
+      margin: 10px 0;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+    }
+    input[type="number"], button {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #28a745;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>StashBros Produkt-Konfigurator</h1>
-        <p>Geben Sie die Mitgliederanzahl Ihres Cannabis Social Clubs ein, um die optimale Produktzusammenstellung, Verbrauch und Abo-Optionen zu berechnen.</p>
-        <label for="members">Mitgliederanzahl:</label>
-        <input type="number" id="members" min="1" max="100000" placeholder="z. B. 500" aria-describedby="memberHelp">
-        <span id="memberHelp" class="error-message"></span>
-        <button id="calculate-btn" onclick="generateRecommendation()">Empfehlung anzeigen</button>
-        <div class="output" id="output"></div>
+  <div class="container">
+    <h1>StashBros Produkt-Konfigurator</h1>
+    <div class="form-group">
+      <label for="members">Mitgliederanzahl</label>
+      <input type="number" id="members" min="1" placeholder="Geben Sie die Anzahl der Mitglieder ein">
     </div>
-    <script>
-        const baseData = {
-            members: 500,
-            plantsPerMember: 1120 / 500,
-            averageYield: 66.96, // Durchschnittsertrag in Gramm pro Pflanze
-            products: [
-                { name: "Coco", baseUsage: 168, sizes: [{ size: 1, price: 6.15 }, { size: 5, price: 17.05 }, { size: 10, price: 26.40 }, { size: 20, price: 46.30 }] },
-                { name: "TNT Complex", baseUsage: 61.6, sizes: [{ size: 0.5, price: 5.15 }, { size: 1, price: 6.90 }, { size: 5, price: 18.45 }, { size: 10, price: 30.00 }, { size: 20, price: 51.55 }] },
-                { name: "Wurzel Complex", baseUsage: 61.6, sizes: [{ size: 0.5, price: 10.40 }, { size: 1, price: 16.65 }, { size: 5, price: 56.60 }, { size: 10, price: 91.75 }, { size: 20, price: 158.10 }] },
-                { name: "PowerZyme", baseUsage: 100.8, sizes: [{ size: 0.5, price: 5.80 }, { size: 1, price: 8.20 }, { size: 5, price: 33.75 }, { size: 10, price: 60.00 }] },
-                { name: "SuperVit", baseUsage: 0.62, sizes: [{ size: 0.01, price: 6.45 }, { size: 0.05, price: 15.85 }, { size: 0.5, price: 92.10 }] },
-                { name: "PK 13/14", baseUsage: 100.8, sizes: [{ size: 0.5, price: 5.35 }, { size: 1, price: 7.35 }, { size: 5, price: 28.45 }, { size: 10, price: 49.70 }, { size: 20, price: 86.65 }] }
-            ],
-            perPlantProducts: [
-                { name: "Growbag", price: 5.99 },
-                { name: "Cube", price: 1.99 }
-            ]
-        };
+    <button onclick="calculate()">Berechnen</button>
 
-        const formatNumber = (number) => new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(number);
+    <h2>Produktempfehlungen</h2>
+    <div class="responsive">
+      <table id="recommendations-table">
+        <thead>
+          <tr>
+            <th>Produkt</th>
+            <th>Fassungsgrößen (in Litern)</th>
+            <th>Anzahl</th>
+            <th>Einzelpreis (€)</th>
+            <th>Gesamtkosten (€)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
 
-        function calculateOptimalSize(product, usage) {
-            let bestOption = product.sizes[0];
-            let minCost = Infinity;
-            let unitsNeeded = 0;
+    <h2>Abo-Optionen</h2>
+    <div class="responsive">
+      <table id="subscription-table">
+        <thead>
+          <tr>
+            <th>Rabatt</th>
+            <th>Rabattierte Gesamtkosten (€)</th>
+            <th>Kosten pro Gramm (€)</th>
+            <th>Kosten pro Pflanze (€)</th>
+            <th>Monatliche Kosten (€)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
 
-            product.sizes.forEach(option => {
-                const units = Math.ceil(usage / option.size);
-                const cost = units * option.price;
+  <script>
+    const productData = {
+      coco: { volumes: [0.5, 1, 5, 10, 20], prices: [5.00, 6.15, 17.05, 26.40, 46.30] },
+      tnt: { volumes: [0.5, 1, 5, 10, 20], prices: [5.15, 6.90, 18.45, 30.00, 51.55] },
+      wurzel: { volumes: [1, 5], prices: [12.00, 56.60] },
+      powerzyme: { volumes: [0.5, 1, 5], prices: [4.50, 8.50, 33.75] },
+      supervit: { volumes: [0.05, 0.5], prices: [10.00, 92.10] },
+      pk: { volumes: [0.5, 1, 5, 10, 20], prices: [4.00, 7.50, 28.45, 49.70, 86.65] }
+    };
 
-                if (cost < minCost) {
-                    minCost = cost;
-                    bestOption = option;
-                    unitsNeeded = units;
-                }
-            });
+    const baseConsumption = {
+      coco: 168,
+      tnt: 61.6,
+      wurzel: 61.6,
+      powerzyme: 100.8,
+      supervit: 0.62,
+      pk: 100.8
+    };
 
-            return { bestOption, unitsNeeded };
+    const calculate = () => {
+      const members = parseInt(document.getElementById('members').value, 10);
+      if (isNaN(members) || members <= 0) {
+        alert('Bitte geben Sie eine gültige Mitgliederanzahl ein.');
+        return;
+      }
+
+      const results = calculateConsumption(members);
+      displayRecommendations(results.recommendations);
+      displaySubscriptions(results.totalCost, members);
+    };
+
+    const calculateConsumption = (members) => {
+      const recommendations = {};
+      let totalCost = 0;
+
+      for (const [product, base] of Object.entries(baseConsumption)) {
+        const totalVolume = (base / 500) * members;
+        recommendations[product] = optimizeProduct(productData[product], totalVolume);
+        totalCost += recommendations[product].totalCost;
+      }
+
+      return { recommendations, totalCost };
+    };
+
+    const optimizeProduct = (product, volume) => {
+      const { volumes, prices } = product;
+      let remainingVolume = volume;
+      const result = { sizes: {}, totalCost: 0 };
+
+      for (let i = volumes.length - 1; i >= 0; i--) {
+        const size = volumes[i];
+        const price = prices[i];
+        const count = Math.floor(remainingVolume / size);
+
+        if (count > 0) {
+          result.sizes[size] = count;
+          result.totalCost += count * price;
+          remainingVolume -= count * size;
         }
+      }
 
-        function calculateDiscountedPrice(totalCost10Weeks, weeks, plants10Weeks) {
-            const scaledPlants = plants10Weeks * (weeks / 10);
-            const scaledYield = scaledPlants * baseData.averageYield; // Gesamtertrag in Gramm
-            const scaledCost = totalCost10Weeks * (weeks / 10);
-            const discountRate = weeks === 10 ? 0.0196 : weeks === 20 ? 0.0667 : 0.1382;
-            const discountAmount = scaledCost * discountRate;
-            const discountedPrice = scaledCost - discountAmount;
+      if (remainingVolume > 0) {
+        const smallestSizeIndex = 0;
+        result.sizes[volumes[smallestSizeIndex]] = (result.sizes[volumes[smallestSizeIndex]] || 0) + 1;
+        result.totalCost += prices[smallestSizeIndex];
+      }
 
-            const costPerPlant = discountedPrice / scaledPlants;
-            const costPerGram = discountedPrice / scaledYield;
-            const monthlyCost = discountedPrice / (weeks / 4.35);
+      return result;
+    };
 
-            return { discountedPrice, discountAmount, costPerPlant, costPerGram, monthlyCost };
+    const displayRecommendations = (recommendations) => {
+      const tableBody = document.querySelector('#recommendations-table tbody');
+      tableBody.innerHTML = '';
+
+      for (const [product, data] of Object.entries(recommendations)) {
+        for (const [size, count] of Object.entries(data.sizes)) {
+          const row = `
+            <tr>
+              <td>${product}</td>
+              <td>${size} L</td>
+              <td>${count}</td>
+              <td>${productData[product].prices[productData[product].volumes.indexOf(parseFloat(size))].toFixed(2)}</td>
+              <td>${(count * productData[product].prices[productData[product].volumes.indexOf(parseFloat(size))]).toFixed(2)}</td>
+            </tr>
+          `;
+          tableBody.insertAdjacentHTML('beforeend', row);
         }
+      }
+    };
 
-        function generateRecommendation() {
-            const membersInput = document.getElementById("members");
-            const members = parseInt(membersInput.value);
-            const output = document.getElementById("output");
+    const displaySubscriptions = (totalCost, members) => {
+      const avgYield = 66.96; // grams per plant
+      const tableBody = document.querySelector('#subscription-table tbody');
+      tableBody.innerHTML = '';
 
-            if (!members || members <= 0) {
-                output.innerHTML = "<p class='error-message'>Bitte geben Sie eine gültige Mitgliederanzahl ein.</p>";
-                return;
-            }
+      const plans = [
+        { name: 'Small (10 Wochen)', discount: 0.0196 },
+        { name: 'Medium (20 Wochen)', discount: 0.0667 },
+        { name: 'Large (40 Wochen)', discount: 0.1382 }
+      ];
 
-            const plants10Weeks = Math.ceil(members * baseData.plantsPerMember);
-            let totalCost10Weeks = 0;
+      plans.forEach(plan => {
+        const discountedCost = totalCost * (1 - plan.discount);
+        const costPerGram = discountedCost / (members * avgYield);
+        const costPerPlant = discountedCost / members;
+        const monthlyCost = discountedCost / (10 / 4); // 10 weeks = ~2.5 months
 
-            let recommendation = "<h3>Empfohlene Produkte:</h3><div class='table-wrapper'><table>";
-            recommendation += "<tr><th>Produkt</th><th>Optimale Größe</th><th>Anzahl</th><th>Preis (€)</th><th>10-Wochen Verbrauch</th><th>Gesamtkosten (€)</th></tr>";
-
-            baseData.products.forEach(product => {
-                const usage = product.baseUsage * (members / baseData.members);
-                const { bestOption, unitsNeeded } = calculateOptimalSize(product, usage);
-                const cost = unitsNeeded * bestOption.price;
-                totalCost10Weeks += cost;
-
-                recommendation += `<tr>
-                    <td>${product.name}</td>
-                    <td>${bestOption.size} L</td>
-                    <td>${unitsNeeded}</td>
-                    <td>${formatNumber(bestOption.price)}</td>
-                    <td>${usage.toFixed(2)} L</td>
-                    <td>${formatNumber(cost)}</td>
-                </tr>`;
-            });
-
-            baseData.perPlantProducts.forEach(product => {
-                const unitsNeeded = plants10Weeks;
-                const cost = unitsNeeded * product.price;
-                totalCost10Weeks += cost;
-
-                recommendation += `<tr>
-                    <td>${product.name}</td>
-                    <td>-</td>
-                    <td>${unitsNeeded}</td>
-                    <td>${formatNumber(product.price)}</td>
-                    <td>${unitsNeeded} Stück</td>
-                    <td>${formatNumber(cost)}</td>
-                </tr>`;
-            });
-
-            recommendation += "</table></div>";
-            recommendation += `<h3>Gesamtkosten für 10 Wochen: ${formatNumber(totalCost10Weeks)}</h3>`;
-
-            recommendation += `<h3>Abo-Optionen:</h3><div class='table-wrapper'><table>`;
-            recommendation += `
-                <tr>
-                    <th>Abo-Modell</th>
-                    <th>Rabatt</th>
-                    <th>Gesamtkosten (€)</th>
-                    <th>Monatliche Kosten (€)</th>
-                    <th>Kosten/Gramm (€)</th>
-                    <th>Kosten/Pflanze (€)</th>
-                    <th>Ersparnis (€)</th>
-                </tr>`;
-
-            const tenWeeks = calculateDiscountedPrice(totalCost10Weeks, 10, plants10Weeks);
-            const twentyWeeks = calculateDiscountedPrice(totalCost10Weeks, 20, plants10Weeks);
-            const fortyWeeks = calculateDiscountedPrice(totalCost10Weeks, 40, plants10Weeks);
-
-            recommendation += `
-                <tr>
-                    <td>10 Wochen</td>
-                    <td>1,96 %</td>
-                    <td>${formatNumber(tenWeeks.discountedPrice)}</td>
-                    <td>${formatNumber(tenWeeks.monthlyCost)}</td>
-                    <td>${formatNumber(tenWeeks.costPerGram)}</td>
-                    <td>${formatNumber(tenWeeks.costPerPlant)}</td>
-                    <td>${formatNumber(tenWeeks.discountAmount)}</td>
-                </tr>
-                <tr>
-                    <td>20 Wochen</td>
-                    <td>6,67 %</td>
-                    <td>${formatNumber(twentyWeeks.discountedPrice)}</td>
-                    <td>${formatNumber(twentyWeeks.monthlyCost)}</td>
-                    <td>${formatNumber(twentyWeeks.costPerGram)}</td>
-                    <td>${formatNumber(twentyWeeks.costPerPlant)}</td>
-                    <td>${formatNumber(twentyWeeks.discountAmount)}</td>
-                </tr>
-                <tr>
-                    <td>40 Wochen</td>
-                    <td>13,82 %</td>
-                    <td>${formatNumber(fortyWeeks.discountedPrice)}</td>
-                    <td>${formatNumber(fortyWeeks.monthlyCost)}</td>
-                    <td>${formatNumber(fortyWeeks.costPerGram)}</td>
-                    <td>${formatNumber(fortyWeeks.costPerPlant)}</td>
-                    <td>${formatNumber(fortyWeeks.discountAmount)}</td>
-                </tr>
-            `;
-            recommendation += "</table></div>";
-
-            recommendation += `<p class="footnote">* Durchschnittlicher Ertrag pro Pflanze: ${baseData.averageYield.toFixed(2)} Gramm</p>`;
-            output.innerHTML = recommendation;
-        }
-    </script>
+        const row = `
+          <tr>
+            <td>${plan.name}</td>
+            <td>${discountedCost.toFixed(2)}</td>
+            <td>${costPerGram.toFixed(2)}</td>
+            <td>${costPerPlant.toFixed(2)}</td>
+            <td>${monthlyCost.toFixed(2)}</td>
+          </tr>
+        `;
+        tableBody.insertAdjacentHTML('beforeend', row);
+      });
+    };
+  </script>
 </body>
 </html>
