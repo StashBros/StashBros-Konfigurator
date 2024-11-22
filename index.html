@@ -90,6 +90,35 @@
             }).format(value);
         }
 
+        function optimizeCombination(combination, sizes, prices) {
+            sizes.sort((a, b) => b - a);
+            const optimized = [];
+            let carryOver = combination.reduce((sum, item) => sum + item.units * item.size, 0);
+
+            for (const size of sizes) {
+                if (carryOver >= size) {
+                    const units = Math.floor(carryOver / size);
+                    optimized.push({
+                        size,
+                        units,
+                        price: prices[sizes.indexOf(size)]
+                    });
+                    carryOver %= size;
+                }
+            }
+
+            if (carryOver > 0) {
+                const smallestSize = sizes[sizes.length - 1];
+                optimized.push({
+                    size: smallestSize,
+                    units: Math.ceil(carryOver / smallestSize),
+                    price: prices[sizes.indexOf(smallestSize)]
+                });
+            }
+
+            return optimized;
+        }
+
         function calculateRecommendations(members) {
             const ratio = members / data.members;
             const perPlantCount = Math.ceil(members * (1120 / data.members));
@@ -115,14 +144,19 @@
                     result.push({ size: smallestSize, price: smallestPrice, units });
                 }
 
+                result = optimizeCombination(result, product.sizes, product.prices);
+
+                let calculatedTotal = result.reduce((sum, item) => sum + item.units * item.size, 0);
+                calculatedTotal = parseFloat(calculatedTotal.toFixed(2));
+
                 if (product.name === "SuperVit") {
-                    let totalCalculated = result.reduce((sum, item) => sum + item.units * item.size, 0);
-                    while (totalCalculated > totalUsage) {
+                    let excess = parseFloat((calculatedTotal - totalUsage).toFixed(2));
+                    if (excess > 0) {
                         const lastItem = result[result.length - 1];
-                        if (lastItem.size === product.sizes[product.sizes.length - 1]) {
+                        if (lastItem.size === product.sizes[product.sizes.length - 1] && lastItem.units > 0) {
                             lastItem.units -= 1;
-                            totalCalculated -= lastItem.size;
-                            if (lastItem.units === 0) result.pop();
+                            calculatedTotal -= lastItem.size;
+                            result = result.filter(item => item.units > 0);
                         }
                     }
                 }
