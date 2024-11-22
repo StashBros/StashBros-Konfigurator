@@ -96,39 +96,6 @@
             }).format(value);
         }
 
-        function optimizeCombination(combination, sizes, prices) {
-            sizes.sort((a, b) => b - a);
-            const optimized = [];
-            let carryOver = 0;
-
-            combination.forEach(item => {
-                carryOver += item.units * item.size;
-            });
-
-            for (const size of sizes) {
-                if (carryOver >= size) {
-                    const units = Math.floor(carryOver / size);
-                    optimized.push({
-                        size,
-                        units,
-                        price: prices[sizes.indexOf(size)]
-                    });
-                    carryOver %= size;
-                }
-            }
-
-            if (carryOver > 0) {
-                const smallestSize = sizes[sizes.length - 1];
-                optimized.push({
-                    size: smallestSize,
-                    units: 1,
-                    price: prices[sizes.indexOf(smallestSize)]
-                });
-            }
-
-            return optimized;
-        }
-
         function calculateRecommendations(members) {
             const ratio = members / data.members;
             const perPlantCount = Math.ceil(members * (1120 / data.members));
@@ -137,6 +104,7 @@
                 let result = [];
                 let remainder = totalUsage;
 
+                // Hauptkombinationen berechnen
                 for (let i = 0; i < product.sizes.length; i++) {
                     const size = product.sizes[i];
                     const price = product.prices[i];
@@ -147,18 +115,18 @@
                     }
                 }
 
+                // Kleinste Größe hinzufügen, falls ein Rest übrig ist
                 if (remainder > 0) {
                     const smallestSize = product.sizes[product.sizes.length - 1];
                     const smallestPrice = product.prices[product.sizes.length - 1];
                     const units = Math.ceil(remainder / smallestSize);
                     result.push({ size: smallestSize, price: smallestPrice, units });
-                    remainder = parseFloat((remainder - units * smallestSize).toFixed(2));
                 }
 
                 const calculatedTotal = result.reduce((sum, item) => sum + item.units * item.size, 0);
                 if (Math.abs(calculatedTotal - totalUsage) > 0.01) {
-                    throw new Error(
-                        `Fehler in der Berechnung: Produkt ${product.name} hat einen Verbrauch von ${totalUsage} L, berechnet wurden aber ${calculatedTotal} L.`
+                    console.error(
+                        `Warnung: Berechnung für ${product.name} ist ungenau. Erwartet: ${totalUsage}, Berechnet: ${calculatedTotal}`
                     );
                 }
 
@@ -167,6 +135,7 @@
                 return { name: product.name, totalUsage: `${totalUsage} L`, combination: result, totalCost };
             });
 
+            // Produkte pro Pflanze hinzufügen
             data.perPlantProducts.forEach(product => {
                 const totalCost = perPlantCount * product.price;
                 recommendations.push({
@@ -180,29 +149,7 @@
             return recommendations;
         }
 
-        function calculateSubscriptionOptions(totalCost, plants) {
-            const options = [
-                { weeks: 10, discount: 0.0196, months: 2.5 },
-                { weeks: 20, discount: 0.0667, months: 5 },
-                { weeks: 40, discount: 0.1334, months: 10 }
-            ];
-
-            return options.map(option => {
-                const discountAmount = totalCost * option.discount;
-                const discountedPrice = totalCost - discountAmount;
-
-                return {
-                    weeks: option.weeks,
-                    discountedPrice,
-                    discountAmount,
-                    monthlyCost: discountedPrice / option.months,
-                    costPerPlant: discountedPrice / plants,
-                    costPerGram: discountedPrice / (data.averageYield * plants)
-                };
-            });
-        }
-
-        function displayRecommendations(recommendations, subscriptionOptions, totalCost) {
+        function displayRecommendations(recommendations) {
             const output = document.getElementById("output");
             let html = "<h3>Empfohlene Produkte</h3>";
             html += `<table>
@@ -236,38 +183,6 @@
             });
 
             html += "</tbody></table>";
-            html += `<h3>Gesamtkosten: ${formatNumber(totalCost)}</h3>`;
-
-            html += "<h3>Abo-Optionen</h3>";
-            html += `<table>
-                <thead>
-                    <tr>
-                        <th>Wochen</th>
-                        <th>Rabatt</th>
-                        <th>Rabattierter Gesamtpreis (€)</th>
-                        <th>Monatliche Kosten (€)</th>
-                        <th>Kosten/Gramm (€)</th>
-                        <th>Kosten/Pflanze (€)</th>
-                        <th>Ersparnis (€)</th>
-                    </tr>
-                </thead>
-                <tbody>`;
-
-            subscriptionOptions.forEach(sub => {
-                html += `
-                    <tr>
-                        <td>${sub.weeks} Wochen</td>
-                        <td>${(sub.discountAmount / totalCost * 100).toFixed(2)}%</td>
-                        <td>${formatNumber(sub.discountedPrice)}</td>
-                        <td>${formatNumber(sub.monthlyCost)}</td>
-                        <td>${formatNumber(sub.costPerGram)}</td>
-                        <td>${formatNumber(sub.costPerPlant)}</td>
-                        <td>${formatNumber(sub.discountAmount)}</td>
-                    </tr>`;
-            });
-
-            html += "</tbody></table>";
-            html += `<p class="footnote">* Durchschnittlicher Ertrag pro Pflanze: ${data.averageYield.toFixed(2)} Gramm</p>`;
             output.innerHTML = html;
         }
 
@@ -279,11 +194,7 @@
             }
 
             const recommendations = calculateRecommendations(members);
-            const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
-            const plants = Math.ceil(members * (1120 / data.members));
-            const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants);
-
-            displayRecommendations(recommendations, subscriptionOptions, totalCost);
+            displayRecommendations(recommendations);
         });
     </script>
 </body>
