@@ -127,7 +127,6 @@
 
             product.sizes.sort((a, b) => b.size - a.size); // Sort sizes from largest to smallest
 
-            // Calculate initial combination
             for (const size of product.sizes) {
                 const units = Math.floor(remainingUsage / size.size);
                 if (units > 0) {
@@ -136,38 +135,20 @@
                 }
             }
 
-            // If remaining usage exists, add the smallest available size
             if (remainingUsage > 0) {
                 const smallestSize = product.sizes[product.sizes.length - 1];
-                result.push({ size: smallestSize.size, price: smallestSize.price, units: 1 });
+                result.push({ size: smallestSize.size, price: smallestSize.price, units: Math.ceil(remainingUsage / smallestSize.size) });
             }
 
-            return optimizeCombination(result, product.sizes);
+            return ensureMinimumCoverage(result, usage);
         }
 
-        function optimizeCombination(combination, sizes) {
-            let needsOptimization = true;
+        function ensureMinimumCoverage(combination, requiredUsage) {
+            let totalCovered = combination.reduce((sum, item) => sum + item.size * item.units, 0);
 
-            while (needsOptimization) {
-                needsOptimization = false;
-
-                // Check for replacement opportunities
-                for (let i = combination.length - 1; i > 0; i--) {
-                    const smaller = combination[i];
-                    const larger = combination[i - 1];
-
-                    if (
-                        smaller &&
-                        larger &&
-                        smaller.units >= larger.size / smaller.size &&
-                        larger.units > 0
-                    ) {
-                        larger.units -= 1;
-                        smaller.units -= larger.size / smaller.size;
-                        smaller.units = Math.floor(smaller.units);
-                        needsOptimization = true;
-                    }
-                }
+            if (totalCovered < requiredUsage) {
+                const smallestSize = combination[combination.length - 1];
+                smallestSize.units += Math.ceil((requiredUsage - totalCovered) / smallestSize.size);
             }
 
             return combination.filter(item => item.units > 0);
