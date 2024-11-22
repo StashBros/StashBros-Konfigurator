@@ -41,10 +41,6 @@
         .error-message {
             color: red;
         }
-        .table-wrapper {
-            overflow-x: auto;
-            margin-top: 20px;
-        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -56,37 +52,20 @@
         th, td {
             padding: 8px;
             text-align: left;
-            font-size: 0.9rem;
-            word-wrap: break-word;
-            max-width: 150px;
         }
         th {
             background-color: #f2f2f2;
-            text-align: center;
-        }
-        button {
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
         }
         .footnote {
-            font-size: 0.8em;
-            color: #555;
             margin-top: 20px;
-            font-style: italic;
+            font-size: 0.9em;
+            color: #555;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Produkt-Konfigurator</h1>
-        <p>Geben Sie die Mitgliederanzahl Ihres Cannabis Social Clubs ein, um die optimale Produktzusammenstellung, Verbrauch und Abo-Optionen zu berechnen.</p>
         <label for="members">Mitgliederanzahl:</label>
         <input type="number" id="members" placeholder="z. B. 500" min="1">
         <button id="calculate-btn">Empfehlung berechnen</button>
@@ -98,24 +77,18 @@
             members: 500,
             averageYield: 66.96, // Durchschnittlicher Ertrag pro Pflanze
             products: [
-                { name: "Coco", baseUsage: 168, sizes: [20, 10, 5, 1], prices: [46.30, 26.40, 17.05, 6.15] },
-                { name: "TNT Complex", baseUsage: 61.6, sizes: [20, 10, 5, 1, 0.5], prices: [51.55, 30.00, 18.45, 6.90, 5.15] },
-                { name: "Wurzel Complex", baseUsage: 61.6, sizes: [20, 10, 5, 1, 0.5], prices: [158.10, 91.75, 56.60, 16.65, 10.40] },
-                { name: "PowerZyme", baseUsage: 100.8, sizes: [10, 5, 1, 0.5], prices: [60.00, 33.75, 8.20, 5.80] },
-                { name: "SuperVit", baseUsage: 0.62, sizes: [0.5, 0.05, 0.01], prices: [92.10, 15.85, 6.45] },
-                { name: "PK 13/14", baseUsage: 100.8, sizes: [20, 10, 5, 1, 0.5], prices: [86.65, 49.70, 28.45, 7.35, 5.35] }
-            ],
-            perPlantProducts: [
-                { name: "Growbag", price: 5.99 },
-                { name: "Cube", price: 1.99 }
+                { name: "TNT Complex", baseUsage: 61.6, sizes: [20, 1], prices: [51.55, 6.90] },
+                { name: "Wurzel Complex", baseUsage: 61.6, sizes: [20, 1], prices: [158.10, 16.65] },
+                { name: "PK 13/14", baseUsage: 100.8, sizes: [20, 5, 1], prices: [86.65, 28.45, 7.35] },
+                { name: "SuperVit", baseUsage: 0.62, sizes: [0.05, 0.01], prices: [15.85, 6.45] }
             ]
         };
 
         function calculateRecommendations(members) {
             const ratio = members / data.members;
-            const recommendations = data.products.map(product => {
+            return data.products.map(product => {
                 const totalUsage = product.baseUsage * ratio;
-                const combination = [];
+                const result = [];
                 let remainder = totalUsage;
 
                 for (let i = 0; i < product.sizes.length; i++) {
@@ -123,7 +96,7 @@
                     const price = product.prices[i];
                     const units = Math.floor(remainder / size);
                     if (units > 0) {
-                        combination.push({ size, price, units });
+                        result.push({ size, price, units });
                         remainder %= size;
                     }
                 }
@@ -131,75 +104,102 @@
                 if (remainder > 0) {
                     const smallestSize = product.sizes[product.sizes.length - 1];
                     const smallestPrice = product.prices[product.sizes.length - 1];
-                    combination.push({ size: smallestSize, price: smallestPrice, units: 1 });
+                    result.push({ size: smallestSize, price: smallestPrice, units: 1 });
                 }
 
-                const totalCost = combination.reduce((sum, item) => sum + (item.units * item.price), 0);
-                return { name: product.name, totalUsage, combination, totalCost };
+                const totalCost = result.reduce((sum, item) => sum + (item.units * item.price), 0);
+                return { name: product.name, totalUsage, combination: result, totalCost };
             });
-
-            const totalPlants = Math.ceil(members * (1120 / 500));
-            const perPlantCost = data.perPlantProducts.map(product => ({
-                name: product.name,
-                units: totalPlants,
-                totalCost: product.price * totalPlants
-            }));
-
-            return { recommendations, perPlantCost, totalPlants };
         }
 
-        function calculateTotalCost(recommendations, perPlantCost) {
-            const productCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
-            const plantCost = perPlantCost.reduce((sum, item) => sum + item.totalCost, 0);
-            return productCost + plantCost;
+        function calculateSubscriptionOptions(totalCost, plants) {
+            const options = [
+                { weeks: 10, discount: 0.0196 },
+                { weeks: 20, discount: 0.0667 },
+                { weeks: 40, discount: 0.1382 }
+            ];
+
+            return options.map(option => {
+                const scaledCost = totalCost * (option.weeks / 10);
+                const discountAmount = scaledCost * option.discount;
+                const discountedPrice = scaledCost - discountAmount;
+
+                return {
+                    weeks: option.weeks,
+                    discountedPrice,
+                    discountAmount,
+                    monthlyCost: discountedPrice / (option.weeks / 4.35),
+                    costPerPlant: discountedPrice / plants,
+                    costPerGram: discountedPrice / (data.averageYield * plants)
+                };
+            });
         }
 
-        function displayRecommendations({ recommendations, perPlantCost, totalPlants }) {
+        function displayRecommendations(recommendations, subscriptionOptions, totalCost) {
             const output = document.getElementById("output");
-            let html = `<h3>Empfohlene Produkte:</h3><div class="table-wrapper"><table>
+            let html = "<h3>Empfohlene Produkte</h3>";
+            html += `<table>
                 <thead>
                     <tr>
                         <th>Produkt</th>
-                        <th>Optimale Größe</th>
-                        <th>Anzahl</th>
-                        <th>Einzelpreis (€)</th>
-                        <th>10-Wochen Verbrauch</th>
+                        <th>Gesamtnutzung (L)</th>
+                        <th>Fassungsgrößen</th>
+                        <th>Stückpreise (€)</th>
                         <th>Gesamtkosten (€)</th>
                     </tr>
                 </thead>
                 <tbody>`;
 
             recommendations.forEach(rec => {
-                const sizes = rec.combination.map(c => `${c.size} L`).join("<br>");
-                const units = rec.combination.map(c => c.units).join("<br>");
-                const prices = rec.combination.map(c => `${c.price.toFixed(2)} €`).join("<br>");
+                const combinationDetails = rec.combination.map(comb => 
+                    `${comb.units} x ${comb.size}L`
+                ).join("<br>");
+                const priceDetails = rec.combination.map(comb => 
+                    `${comb.price.toFixed(2)} €`
+                ).join("<br>");
+
                 html += `
                     <tr>
                         <td>${rec.name}</td>
-                        <td>${sizes}</td>
-                        <td>${units}</td>
-                        <td>${prices}</td>
                         <td>${rec.totalUsage.toFixed(2)} L</td>
+                        <td>${combinationDetails}</td>
+                        <td>${priceDetails}</td>
                         <td>${rec.totalCost.toFixed(2)} €</td>
                     </tr>`;
             });
 
-            perPlantCost.forEach(item => {
+            html += "</tbody></table>";
+            html += `<h3>Gesamtkosten: ${totalCost.toFixed(2)} €</h3>`;
+
+            html += "<h3>Abo-Optionen</h3>";
+            html += `<table>
+                <thead>
+                    <tr>
+                        <th>Wochen</th>
+                        <th>Rabatt</th>
+                        <th>Rabattierter Gesamtpreis (€)</th>
+                        <th>Monatliche Kosten (€)</th>
+                        <th>Kosten/Gramm (€)</th>
+                        <th>Kosten/Pflanze (€)</th>
+                        <th>Ersparnis (€)</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            subscriptionOptions.forEach(sub => {
                 html += `
                     <tr>
-                        <td>${item.name}</td>
-                        <td>-</td>
-                        <td>${item.units}</td>
-                        <td>${item.totalCost.toFixed(2)} €</td>
-                        <td>-</td>
-                        <td>${item.totalCost.toFixed(2)} €</td>
+                        <td>${sub.weeks} Wochen</td>
+                        <td>${(sub.discountAmount / totalCost * 100).toFixed(2)}%</td>
+                        <td>${sub.discountedPrice.toFixed(2)} €</td>
+                        <td>${sub.monthlyCost.toFixed(2)} €</td>
+                        <td>${sub.costPerGram.toFixed(2)} €</td>
+                        <td>${sub.costPerPlant.toFixed(2)} €</td>
+                        <td>${sub.discountAmount.toFixed(2)} €</td>
                     </tr>`;
             });
 
-            html += "</tbody></table></div>";
-
-            const totalCost = calculateTotalCost(recommendations, perPlantCost);
-            html += `<h3>Gesamtkosten für 10 Wochen: ${totalCost.toFixed(2)} €</h3>`;
+            html += "</tbody></table>";
             html += `<p class="footnote">* Durchschnittlicher Ertrag pro Pflanze: ${data.averageYield.toFixed(2)} Gramm</p>`;
             output.innerHTML = html;
         }
@@ -211,8 +211,12 @@
                 return;
             }
 
-            const recommendationData = calculateRecommendations(members);
-            displayRecommendations(recommendationData);
+            const recommendations = calculateRecommendations(members);
+            const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
+            const plants = Math.ceil(members * (1120 / 500));
+            const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants);
+
+            displayRecommendations(recommendations, subscriptionOptions, totalCost);
         });
     </script>
 </body>
