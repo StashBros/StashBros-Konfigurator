@@ -140,15 +140,56 @@
                 result.push({ size: smallestSize.size, price: smallestSize.price, units: Math.ceil(remainingUsage / smallestSize.size) });
             }
 
-            return ensureMinimumCoverage(result, usage);
+            return optimizeCombination(result, product.sizes);
         }
 
-        function ensureMinimumCoverage(combination, requiredUsage) {
-            let totalCovered = combination.reduce((sum, item) => sum + item.size * item.units, 0);
+        function optimizeCombination(combination, sizes) {
+            let needsOptimization = true;
 
-            if (totalCovered < requiredUsage) {
-                const smallestSize = combination[combination.length - 1];
-                smallestSize.units += Math.ceil((requiredUsage - totalCovered) / smallestSize.size);
+            while (needsOptimization) {
+                needsOptimization = false;
+
+                for (let i = combination.length - 1; i > 0; i--) {
+                    const smaller = combination[i];
+                    const larger = combination[i - 1];
+
+                    if (
+                        smaller &&
+                        larger &&
+                        smaller.units >= larger.size / smaller.size &&
+                        larger.units > 0
+                    ) {
+                        larger.units -= 1;
+                        smaller.units -= larger.size / smaller.size;
+                        smaller.units = Math.floor(smaller.units);
+                        needsOptimization = true;
+                    }
+                }
+            }
+
+            return finalizeOptimization(combination, sizes);
+        }
+
+        function finalizeOptimization(combination, sizes) {
+            let needsFurtherOptimization = true;
+
+            while (needsFurtherOptimization) {
+                needsFurtherOptimization = false;
+
+                for (let i = combination.length - 1; i > 0; i--) {
+                    const current = combination[i];
+                    const previous = combination[i - 1];
+
+                    if (
+                        current.units > 1 &&
+                        sizes[i - 1].size === current.size * 2 // Check if two smaller can equal one larger
+                    ) {
+                        current.units -= 2;
+                        if (current.units <= 0) combination.splice(i, 1);
+                        previous.units += 1;
+                        needsFurtherOptimization = true;
+                    }
+                }
             }
 
             return combination.filter(item => item.units > 0);
