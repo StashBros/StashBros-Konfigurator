@@ -135,7 +135,7 @@
                 }
             }
 
-            // If there is any remaining usage, add the smallest size to cover the rest
+            // Handle remaining usage with the smallest fitting size
             if (remainingUsage > 0) {
                 const smallestFittingSize = product.sizes.find(size => size.size >= remainingUsage);
                 if (smallestFittingSize) {
@@ -143,15 +143,21 @@
                 }
             }
 
-            return result.reduce((acc, curr) => {
-                const existing = acc.find(item => item.size === curr.size);
-                if (existing) {
-                    existing.units += curr.units;
-                } else {
-                    acc.push(curr);
+            // Avoid over-coverage by removing excess units
+            let totalCovered = result.reduce((sum, item) => sum + item.size * item.units, 0);
+            if (totalCovered > usage) {
+                const excess = totalCovered - usage;
+                for (let i = result.length - 1; i >= 0; i--) {
+                    const removableAmount = result[i].size * result[i].units;
+                    if (removableAmount >= excess) {
+                        result[i].units--;
+                        if (result[i].units === 0) result.splice(i, 1);
+                        break;
+                    }
                 }
-                return acc;
-            }, []);
+            }
+
+            return result.filter(item => item.units > 0); // Return only valid entries
         }
 
         function generateRecommendation() {
