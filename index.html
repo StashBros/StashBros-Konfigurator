@@ -133,9 +133,8 @@
             const ratio = members / data.members;
             const perPlantCount = Math.ceil(members * (1120 / data.members));
             const recommendations = data.products.map(product => {
-                // Rundung der Gesamtverbrauchsmenge auf zwei Dezimalstellen
                 const totalUsage = parseFloat((product.baseUsage * ratio).toFixed(2));
-                const result = [];
+                let result = [];
                 let remainder = totalUsage;
 
                 for (let i = 0; i < product.sizes.length; i++) {
@@ -151,21 +150,28 @@
                 if (remainder > 0) {
                     const smallestSize = product.sizes[product.sizes.length - 1];
                     const smallestPrice = product.prices[product.sizes.length - 1];
-                    result.push({ size: smallestSize, price: smallestPrice, units: 1 });
+                    const units = Math.ceil(remainder / smallestSize);
+                    result.push({ size: smallestSize, price: smallestPrice, units });
+                    remainder = parseFloat((remainder - units * smallestSize).toFixed(2));
                 }
 
-                const optimizedCombination = optimizeCombination(result, product.sizes, product.prices);
+                const calculatedTotal = result.reduce((sum, item) => sum + item.units * item.size, 0);
+                if (Math.abs(calculatedTotal - totalUsage) > 0.01) {
+                    throw new Error(
+                        `Fehler in der Berechnung: Produkt ${product.name} hat einen Verbrauch von ${totalUsage} L, berechnet wurden aber ${calculatedTotal} L.`
+                    );
+                }
 
-                const totalCost = optimizedCombination.reduce((sum, item) => sum + (item.units * item.price), 0);
+                const totalCost = result.reduce((sum, item) => sum + item.units * item.price, 0);
 
-                return { name: product.name, totalUsage: totalUsage.toFixed(2) + " L", combination: optimizedCombination, totalCost };
+                return { name: product.name, totalUsage: `${totalUsage} L`, combination: result, totalCost };
             });
 
             data.perPlantProducts.forEach(product => {
                 const totalCost = perPlantCount * product.price;
                 recommendations.push({
                     name: product.name,
-                    totalUsage: perPlantCount + " Stück",
+                    totalUsage: `${perPlantCount} Stück`,
                     combination: [{ size: 1, price: product.price, units: perPlantCount }],
                     totalCost
                 });
