@@ -124,13 +124,13 @@
             }
 
             // Step 4: Optimize combination
-            const optimizedCombination = finalizeOptimization(result, usage);
+            const optimizedCombination = optimizeCombination(result, product.sizes);
 
             // Step 5: Ensure total coverage
             return ensureCoverage(optimizedCombination, usage);
         }
 
-        function finalizeOptimization(combination, usage) {
+        function optimizeCombination(combination, sizes) {
             let needsFurtherOptimization = true;
 
             while (needsFurtherOptimization) {
