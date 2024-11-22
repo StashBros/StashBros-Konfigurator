@@ -137,11 +137,21 @@
 
             // If there is any remaining usage, add the smallest size to cover the rest
             if (remainingUsage > 0) {
-                const smallestSize = product.sizes[product.sizes.length - 1];
-                result.push({ size: smallestSize.size, price: smallestSize.price, units: 1 });
+                const smallestFittingSize = product.sizes.find(size => size.size >= remainingUsage);
+                if (smallestFittingSize) {
+                    result.push({ size: smallestFittingSize.size, price: smallestFittingSize.price, units: 1 });
+                }
             }
 
-            return result.filter(item => item.units > 0); // Remove any zero-unit entries
+            return result.reduce((acc, curr) => {
+                const existing = acc.find(item => item.size === curr.size);
+                if (existing) {
+                    existing.units += curr.units;
+                } else {
+                    acc.push(curr);
+                }
+                return acc;
+            }, []);
         }
 
         function generateRecommendation() {
