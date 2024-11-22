@@ -82,12 +82,17 @@
                 { name: "PK 13/14", baseUsage: 100.8, sizes: [20, 10, 1], prices: [86.65, 49.70, 7.35] },
                 { name: "SuperVit", baseUsage: 0.62, sizes: [0.05, 0.01], prices: [15.85, 6.45] },
                 { name: "Coco Substrat", baseUsage: 168, sizes: [20, 10, 5], prices: [46.30, 26.40, 17.05] }
+            ],
+            perPlantProducts: [
+                { name: "Growbag", price: 5.99 },
+                { name: "Cube", price: 1.99 }
             ]
         };
 
         function calculateRecommendations(members) {
             const ratio = members / data.members;
-            return data.products.map(product => {
+            const perPlantCount = Math.ceil(members * (1120 / data.members));
+            const recommendations = data.products.map(product => {
                 const totalUsage = product.baseUsage * ratio;
                 const result = [];
                 let remainder = totalUsage;
@@ -111,6 +116,18 @@
                 const totalCost = result.reduce((sum, item) => sum + (item.units * item.price), 0);
                 return { name: product.name, totalUsage, combination: result, totalCost };
             });
+
+            data.perPlantProducts.forEach(product => {
+                const totalCost = perPlantCount * product.price;
+                recommendations.push({
+                    name: product.name,
+                    totalUsage: perPlantCount + " Stück",
+                    combination: [{ size: 1, price: product.price, units: perPlantCount }],
+                    totalCost
+                });
+            });
+
+            return recommendations;
         }
 
         function calculateSubscriptionOptions(totalCost, plants) {
@@ -143,7 +160,7 @@
                 <thead>
                     <tr>
                         <th>Produkt</th>
-                        <th>Gesamtnutzung (L)</th>
+                        <th>Gesamtnutzung</th>
                         <th>Fassungsgrößen</th>
                         <th>Stückpreise (€)</th>
                         <th>Gesamtkosten (€)</th>
@@ -153,7 +170,7 @@
 
             recommendations.forEach(rec => {
                 const combinationDetails = rec.combination.map(comb => 
-                    `${comb.units} x ${comb.size}L`
+                    `${comb.units} x ${comb.size}${rec.name === "Growbag" || rec.name === "Cube" ? " Stück" : "L"}`
                 ).join("<br>");
                 const priceDetails = rec.combination.map(comb => 
                     `${comb.price.toFixed(2)} €`
@@ -162,7 +179,7 @@
                 html += `
                     <tr>
                         <td>${rec.name}</td>
-                        <td>${rec.totalUsage.toFixed(2)} L</td>
+                        <td>${rec.totalUsage}</td>
                         <td>${combinationDetails}</td>
                         <td>${priceDetails}</td>
                         <td>${rec.totalCost.toFixed(2)} €</td>
