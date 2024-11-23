@@ -150,13 +150,11 @@
 
                 if (product.name === "SuperVit") {
                     let calculatedTotal = result.reduce((sum, item) => sum + item.units * item.size, 0);
-                    while (calculatedTotal > totalUsage) {
-                        const lastItem = result[result.length - 1];
-                        if (lastItem.size === product.sizes[product.sizes.length - 1] && lastItem.units > 0) {
-                            lastItem.units -= 1;
-                            calculatedTotal -= lastItem.size;
-                            if (lastItem.units === 0) result.pop();
-                        }
+                    if (calculatedTotal < totalUsage) {
+                        const smallestSize = product.sizes[product.sizes.length - 1];
+                        const smallestPrice = product.prices[product.sizes.length - 1];
+                        result.push({ size: smallestSize, price: smallestPrice, units: 1 });
+                        calculatedTotal += smallestSize;
                     }
 
                     result = result.reduce((acc, item) => {
