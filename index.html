@@ -150,25 +150,18 @@
 
                 if (product.name === "SuperVit") {
                     let calculatedTotal = result.reduce((sum, item) => sum + item.units * item.size, 0);
-                    if (calculatedTotal > totalUsage) {
+                    while (calculatedTotal > totalUsage) {
                         const lastItem = result[result.length - 1];
                         const excess = calculatedTotal - totalUsage;
-                        if (lastItem.size >= excess) {
+
+                        if (lastItem.size >= excess && lastItem.units > 0) {
                             lastItem.units -= 1;
+                            calculatedTotal -= lastItem.size;
                             if (lastItem.units === 0) {
                                 result.pop();
                             }
                         }
                     }
-                    result = result.reduce((acc, item) => {
-                        const existing = acc.find(i => i.size === item.size);
-                        if (existing) {
-                            existing.units += item.units;
-                        } else {
-                            acc.push(item);
-                        }
-                        return acc;
-                    }, []);
                 }
 
                 const totalCost = result.reduce((sum, item) => sum + item.units * item.price, 0);
