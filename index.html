@@ -250,7 +250,7 @@
             html += "</tbody></table>";
             html += `<h3>Gesamtkosten: ${formatNumber(totalCost)}</h3>`;
 
-           html += "<h3>Abo-Optionen</h3>";
+          html += "<h3>Abo-Optionen</h3>";
 html += `<table>
     <thead>
         <tr>
@@ -267,30 +267,30 @@ html += `<table>
     <tbody>`;
 
 subscriptionOptions.forEach(sub => {
-    const adjustedTotalCost =
-        sub.weeks === 10
-            ? sub.discountedPrice
-            : sub.weeks === 20
-                ? sub.discountedPrice * 2
-                : sub.discountedPrice * 4;
+    const rabattierteGesamtkosten = sub.weeks === 10
+        ? sub.discountedPrice
+        : sub.weeks === 20
+        ? sub.discountedPrice * 2
+        : sub.discountedPrice * 4;
 
-    const adjustedMonthlyCost =
-        sub.weeks === 10
-            ? adjustedTotalCost / 2.5
-            : sub.weeks === 20
-                ? adjustedTotalCost / 5
-                : adjustedTotalCost / 10;
+    const monatlicheKosten = rabattierteGesamtkosten / (sub.weeks / 10);
+
+    const ersparnis = sub.weeks === 10
+        ? sub.discountAmount
+        : sub.weeks === 20
+        ? sub.discountAmount * 2
+        : sub.discountAmount * 4;
 
     html += `
         <tr>
             <td>${sub.weeks} Wochen</td>
             <td>${(sub.discountAmount / totalCost * 100).toFixed(2)}%</td>
             <td>${formatNumber(sub.discountedPrice)}</td>
-            <td>${formatNumber(adjustedTotalCost)}</td>
-            <td>${formatNumber(adjustedMonthlyCost)}</td>
+            <td>${formatNumber(rabattierteGesamtkosten)}</td>
+            <td>${formatNumber(monatlicheKosten)}</td>
             <td>${formatNumber(sub.costPerGram)}</td>
             <td>${formatNumber(sub.costPerPlant)}</td>
-            <td>${formatNumber(sub.discountAmount)}</td>
+            <td>${formatNumber(ersparnis)}</td>
         </tr>`;
 });
 
