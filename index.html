@@ -153,8 +153,9 @@
                     if (calculatedTotal < totalUsage) {
                         const smallestSize = product.sizes[product.sizes.length - 1];
                         const smallestPrice = product.prices[product.sizes.length - 1];
-                        result.push({ size: smallestSize, price: smallestPrice, units: 1 });
-                        calculatedTotal += smallestSize;
+                        const missingUnits = Math.ceil((totalUsage - calculatedTotal) / smallestSize);
+                        result.push({ size: smallestSize, price: smallestPrice, units: missingUnits });
+                        calculatedTotal += smallestSize * missingUnits;
                     }
 
                     result = result.reduce((acc, item) => {
