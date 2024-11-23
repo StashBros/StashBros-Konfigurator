@@ -148,15 +148,14 @@
 
                 result = optimizeCombination(result, product.sizes, product.prices);
 
-                let calculatedTotal = result.reduce((sum, item) => sum + item.units * item.size, 0);
-                while (calculatedTotal > totalUsage) {
-                    for (let i = result.length - 1; i >= 0; i--) {
-                        const item = result[i];
-                        if (item.units > 0) {
-                            item.units -= 1;
-                            calculatedTotal = result.reduce((sum, item) => sum + item.units * item.size, 0);
-                            if (item.units === 0) result.splice(i, 1);
-                            if (calculatedTotal <= totalUsage) break;
+                if (product.name === "SuperVit") {
+                    let calculatedTotal = result.reduce((sum, item) => sum + item.units * item.size, 0);
+                    while (calculatedTotal > totalUsage) {
+                        const lastItem = result[result.length - 1];
+                        if (lastItem.size === product.sizes[product.sizes.length - 1] && lastItem.units > 0) {
+                            lastItem.units -= 1;
+                            calculatedTotal -= lastItem.size;
+                            if (lastItem.units === 0) result.pop();
                         }
                     }
                 }
