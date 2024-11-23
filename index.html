@@ -92,28 +92,124 @@
             }).format(value);
         }
 
+        function optimizeCombination(combination, sizes, prices) {
+            sizes.sort((a, b) => b - a);
+            const optimized = [];
+            let carryOver = combination.reduce((sum, item) => sum + item.units * item.size, 0);
+
+            for (const size of sizes) {
+                if (carryOver >= size) {
+                    const units = Math.floor(carryOver / size);
+                    optimized.push({
+                        size,
+                        units,
+                        price: prices[sizes.indexOf(size)]
+                    });
+                    carryOver %= size;
+                }
+            }
+
+            if (carryOver > 0) {
+                const smallestSize = sizes[sizes.length - 1];
+                optimized.push({
+                    size: smallestSize,
+                    units: Math.ceil(carryOver / smallestSize),
+                    price: prices[sizes.indexOf(smallestSize)]
+                });
+            }
+
+            return optimized;
+        }
+
+        function calculateRecommendations(members) {
+            const ratio = members / data.members;
+            const perPlantCount = Math.ceil(members * (1120 / data.members));
+            const recommendations = data.products.map(product => {
+                const totalUsage = parseFloat((product.baseUsage * ratio).toFixed(2));
+                let result = [];
+                let remainder = totalUsage;
+
+                for (let i = 0; i < product.sizes.length; i++) {
+                    const size = product.sizes[i];
+                    const price = product.prices[i];
+                    const units = Math.floor(remainder / size);
+                    if (units > 0) {
+                        result.push({ size, price, units });
+                        remainder = parseFloat((remainder - units * size).toFixed(2));
+                    }
+                }
+
+                if (remainder > 0) {
+                    const smallestSize = product.sizes[product.sizes.length - 1];
+                    const smallestPrice = product.prices[product.sizes.length - 1];
+                    const units = Math.ceil(remainder / smallestSize);
+                    result.push({ size: smallestSize, price: smallestPrice, units });
+                }
+
+                result = optimizeCombination(result, product.sizes, product.prices);
+
+                if (product.name === "SuperVit") {
+                    let calculatedTotal = result.reduce((sum, item) => sum + item.units * item.size, 0);
+                    if (calculatedTotal > totalUsage) {
+                        const excess = calculatedTotal - totalUsage;
+                        for (let i = result.length - 1; i >= 0; i--) {
+                            const item = result[i];
+                            if (item.size <= excess && item.units > 0) {
+                                item.units -= 1;
+                                calculatedTotal -= item.size;
+                                if (item.units === 0) result.splice(i, 1);
+                                break;
+                            }
+                        }
+                    }
+                    // Zusammenfassen der gleichen Fassungsgrößen
+                    result = result.reduce((acc, item) => {
+                        const existing = acc.find(i => i.size === item.size);
+                        if (existing) {
+                            existing.units += item.units;
+                        } else {
+                            acc.push(item);
+                        }
+                        return acc;
+                    }, []);
+                }
+
+                const totalCost = result.reduce((sum, item) => sum + item.units * item.price, 0);
+
+                return { name: product.name, totalUsage: `${totalUsage} L`, combination: result, totalCost };
+            });
+
+            data.perPlantProducts.forEach(product => {
+                const totalCost = perPlantCount * product.price;
+                recommendations.push({
+                    name: product.name,
+                    totalUsage: `${perPlantCount} Stück`,
+                    combination: [{ size: 1, price: product.price, units: perPlantCount }],
+                    totalCost
+                });
+            });
+
+            return recommendations;
+        }
+
         function calculateSubscriptionOptions(totalCost, plants) {
             const options = [
-                { weeks: 10, discount: 0.0196, multiplier: 1, months: 2.5 },
-                { weeks: 20, discount: 0.0667, multiplier: 2, months: 5 },
-                { weeks: 40, discount: 0.1334, multiplier: 4, months: 10 }
+                { weeks: 10, discount: 0.0196, months: 2.5 },
+                { weeks: 20, discount: 0.0667, months: 5 },
+                { weeks: 40, discount: 0.1334, months: 10 }
             ];
 
             return options.map(option => {
                 const discountAmount = totalCost * option.discount;
                 const discountedPrice = totalCost - discountAmount;
-                const totalDiscountedCost = discountedPrice * option.multiplier;
-                const monthlyCost = totalDiscountedCost / option.months;
 
                 return {
                     weeks: option.weeks,
-                    discount: (option.discount * 100).toFixed(2),
                     discountedPrice,
-                    totalDiscountedCost,
-                    monthlyCost,
-                    costPerPlant: totalDiscountedCost / plants,
-                    costPerGram: totalDiscountedCost / (data.averageYield * plants),
-                    discountAmount
+                    discountAmount,
+                    monthlyCost: discountedPrice / option.months,
+                    costPerPlant: discountedPrice / plants,
+                    costPerGram: discountedPrice / (data.averageYield * plants)
                 };
             });
         }
@@ -161,7 +257,6 @@
                         <th>Wochen</th>
                         <th>Rabatt</th>
                         <th>Rabattierter Gesamtpreis (€)</th>
-                        <th>Rabattierte Gesamtkosten (€)</th>
                         <th>Monatliche Kosten (€)</th>
                         <th>Kosten/Gramm (€)</th>
                         <th>Kosten/Pflanze (€)</th>
@@ -174,9 +269,8 @@
                 html += `
                     <tr>
                         <td>${sub.weeks} Wochen</td>
-                        <td>${sub.discount}%</td>
+                        <td>${(sub.discountAmount / totalCost * 100).toFixed(2)}%</td>
                         <td>${formatNumber(sub.discountedPrice)}</td>
-                        <td>${formatNumber(sub.totalDiscountedCost)}</td>
                         <td>${formatNumber(sub.monthlyCost)}</td>
                         <td>${formatNumber(sub.costPerGram)}</td>
                         <td>${formatNumber(sub.costPerPlant)}</td>
