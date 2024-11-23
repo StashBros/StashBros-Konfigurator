@@ -150,12 +150,12 @@
 
                 if (product.name === "SuperVit") {
                     let calculatedTotal = result.reduce((sum, item) => sum + item.units * item.size, 0);
-                    while (calculatedTotal > totalUsage) {
+                    if (calculatedTotal > totalUsage) {
                         const excess = calculatedTotal - totalUsage;
                         for (let i = result.length - 1; i >= 0; i--) {
                             const item = result[i];
-                            if (item.units > 0 && item.size <= excess) {
-                                item.units--;
+                            if (item.size <= excess && item.units > 0) {
+                                item.units -= 1;
                                 calculatedTotal -= item.size;
                                 if (item.units === 0) result.splice(i, 1);
                                 break;
