@@ -92,27 +92,70 @@
             }).format(value);
         }
 
+        function calculateRecommendations(members) {
+            const ratio = members / data.members;
+            const perPlantCount = Math.ceil(members * (1120 / data.members));
+            const recommendations = data.products.map(product => {
+                const totalUsage = parseFloat((product.baseUsage * ratio).toFixed(2));
+                let result = [];
+                let remainder = totalUsage;
+
+                for (let i = 0; i < product.sizes.length; i++) {
+                    const size = product.sizes[i];
+                    const price = product.prices[i];
+                    const units = Math.floor(remainder / size);
+                    if (units > 0) {
+                        result.push({ size, price, units });
+                        remainder = parseFloat((remainder - units * size).toFixed(2));
+                    }
+                }
+
+                if (remainder > 0) {
+                    const smallestSize = product.sizes[product.sizes.length - 1];
+                    const smallestPrice = product.prices[product.sizes.length - 1];
+                    const units = Math.ceil(remainder / smallestSize);
+                    result.push({ size: smallestSize, price: smallestPrice, units });
+                }
+
+                const totalCost = result.reduce((sum, item) => sum + item.units * item.price, 0);
+
+                return { name: product.name, totalUsage: `${totalUsage} L`, combination: result, totalCost };
+            });
+
+            data.perPlantProducts.forEach(product => {
+                const totalCost = perPlantCount * product.price;
+                recommendations.push({
+                    name: product.name,
+                    totalUsage: `${perPlantCount} Stück`,
+                    combination: [{ size: 1, price: product.price, units: perPlantCount }],
+                    totalCost
+                });
+            });
+
+            return recommendations;
+        }
+
         function calculateSubscriptionOptions(totalCost, plants) {
             const options = [
-                { weeks: 10, discount: 0.0196, multiplier: 1, months: 2.5 },
-                { weeks: 20, discount: 0.0667, multiplier: 2, months: 5 },
-                { weeks: 40, discount: 0.1334, multiplier: 4, months: 10 }
+                { weeks: 10, discount: 0.0196, multiplier: 1, divisor: 2.5 },
+                { weeks: 20, discount: 0.0667, multiplier: 2, divisor: 5 },
+                { weeks: 40, discount: 0.1334, multiplier: 4, divisor: 10 }
             ];
 
             return options.map(option => {
                 const discountAmount = totalCost * option.discount;
                 const discountedPrice = totalCost - discountAmount;
-                const totalDiscountedCost = discountedPrice * option.multiplier;
-                const monthlyCost = totalDiscountedCost / option.months;
+                const discountedTotalCost = discountedPrice * option.multiplier;
+                const monthlyCost = discountedTotalCost / option.divisor;
 
                 return {
                     weeks: option.weeks,
                     discountedPrice,
-                    totalDiscountedCost,
+                    discountedTotalCost,
                     discountAmount,
                     monthlyCost,
-                    costPerPlant: totalDiscountedCost / plants,
-                    costPerGram: totalDiscountedCost / (data.averageYield * plants)
+                    costPerPlant: discountedTotalCost / plants,
+                    costPerGram: discountedTotalCost / (data.averageYield * plants)
                 };
             });
         }
@@ -175,7 +218,7 @@
                         <td>${sub.weeks} Wochen</td>
                         <td>${(sub.discountAmount / totalCost * 100).toFixed(2)}%</td>
                         <td>${formatNumber(sub.discountedPrice)}</td>
-                        <td>${formatNumber(sub.totalDiscountedCost)}</td>
+                        <td>${formatNumber(sub.discountedTotalCost)}</td>
                         <td>${formatNumber(sub.monthlyCost)}</td>
                         <td>${formatNumber(sub.costPerGram)}</td>
                         <td>${formatNumber(sub.costPerPlant)}</td>
