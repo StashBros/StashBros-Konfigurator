@@ -162,6 +162,16 @@
                             }
                         }
                     }
+                    // Zusammenfassen der gleichen Fassungsgrößen
+                    result = result.reduce((acc, item) => {
+                        const existing = acc.find(i => i.size === item.size);
+                        if (existing) {
+                            existing.units += item.units;
+                        } else {
+                            acc.push(item);
+                        }
+                        return acc;
+                    }, []);
                 }
 
                 const totalCost = result.reduce((sum, item) => sum + item.units * item.price, 0);
