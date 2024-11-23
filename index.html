@@ -94,9 +94,9 @@
 
         function calculateSubscriptionOptions(totalCost, plants) {
             const options = [
-                { weeks: 10, discount: 0.0196, months: 2.5, multiplier: 1 },
-                { weeks: 20, discount: 0.0667, months: 5, multiplier: 2 },
-                { weeks: 40, discount: 0.1334, months: 10, multiplier: 4 }
+                { weeks: 10, discount: 0.0196, multiplier: 1, months: 2.5 },
+                { weeks: 20, discount: 0.0667, multiplier: 2, months: 5 },
+                { weeks: 40, discount: 0.1334, multiplier: 4, months: 10 }
             ];
 
             return options.map(option => {
