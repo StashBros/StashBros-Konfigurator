@@ -149,7 +149,17 @@
                 result = optimizeCombination(result, product.sizes, product.prices);
 
                 let calculatedTotal = result.reduce((sum, item) => sum + item.units * item.size, 0);
-                calculatedTotal = parseFloat(calculatedTotal.toFixed(2));
+                while (calculatedTotal > totalUsage) {
+                    for (let i = result.length - 1; i >= 0; i--) {
+                        const item = result[i];
+                        if (item.units > 0) {
+                            item.units -= 1;
+                            calculatedTotal = result.reduce((sum, item) => sum + item.units * item.size, 0);
+                            if (item.units === 0) result.splice(i, 1);
+                            if (calculatedTotal <= totalUsage) break;
+                        }
+                    }
+                }
 
                 const totalCost = result.reduce((sum, item) => sum + item.units * item.price, 0);
 
