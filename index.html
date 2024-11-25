@@ -345,45 +345,41 @@
     output.innerHTML = html;
 }
 
-// Event-Listener für den Button
 document.getElementById("calculate-btn").addEventListener("click", () => {
     const output = document.getElementById("output");
     output.innerHTML = ""; // Zurücksetzen der vorherigen Ausgabe
 
+    console.log("Button wurde geklickt."); // Debugging
+
     // Eingabe abrufen
     const members = parseInt(document.getElementById("members").value, 10);
-
-    // Debugging: Prüfe, ob der Button-Klick funktioniert
-    console.log("Button wurde geklickt."); // TEST
-    console.log("Eingegebene Mitgliederanzahl:", members); // TEST
+    console.log("Eingegebene Mitgliederanzahl:", members); // Debugging
 
     // Gültigkeit der Eingabe prüfen
     if (!members || members < 1) {
-        // Fehlerfall: Ungültige Mitgliederanzahl
+        console.log("Ungültige Eingabe:", members); // Debugging
         output.innerHTML = '<p class="error-message" role="alert">Bitte geben Sie eine gültige Mitgliederanzahl ein.</p>';
-        console.log("Fehler: Ungültige Mitgliederanzahl eingegeben."); // TEST
         return;
     }
 
     try {
         // Empfehlungen berechnen
         const recommendations = calculateRecommendations(members);
-        console.log("Empfehlungen berechnet:", recommendations); // TEST
+        console.log("Empfehlungen berechnet:", recommendations); // Debugging
 
         // Gesamtkosten berechnen
         const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
-        console.log("Gesamtkosten berechnet:", totalCost); // TEST
+        console.log("Gesamtkosten berechnet:", totalCost); // Debugging
 
         // Abo-Optionen berechnen
         const plants = Math.ceil(members * (1120 / data.members));
         const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants);
-        console.log("Abo-Optionen berechnet:", subscriptionOptions); // TEST
+        console.log("Abo-Optionen berechnet:", subscriptionOptions); // Debugging
 
         // Ergebnisse anzeigen
         displayRecommendations(recommendations, subscriptionOptions, totalCost);
-        console.log("Ergebnisse erfolgreich angezeigt."); // TEST
+        console.log("Ergebnisse erfolgreich angezeigt."); // Debugging
     } catch (error) {
-        // Fehler behandeln
         console.error("Fehler bei der Berechnung:", error);
         output.innerHTML = '<p class="error-message" role="alert">Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.</p>';
     }
