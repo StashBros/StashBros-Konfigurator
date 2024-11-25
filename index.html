@@ -100,12 +100,12 @@
 </head>
 <body>
     <div class="container">
-        <h1>Produkt-Konfigurator</h1>
-        <label for="members">Mitgliederanzahl:</label>
-        <input type="number" id="members" placeholder="z. B. 500" min="1">
-        <button id="calculate-btn">Empfehlung berechnen</button>
-        <div class="output" id="output"></div>
-    </div>
+    <h1>Produkt-Konfigurator</h1>
+    <label for="members">Mitgliederanzahl:</label>
+    <input type="number" id="members" placeholder="z. B. 500" min="1">
+    <button id="calculate-btn">Empfehlung berechnen</button>
+    <div class="output" id="output"></div>
+</div>
 
     <script>
         const data = {
@@ -335,24 +335,34 @@ subscriptionOptions.forEach(sub => {
 });
 html += `</tbody></table></div>`;
 
-           html += <p class="footnote">* Durchschnittlicher Ertrag pro Pflanze: ${data.averageYield.toFixed(2)} Gramm</p>;
-            output.innerHTML = html;
-        }
+           html += `<p class="footnote">* Durchschnittlicher Ertrag pro Pflanze: ${data.averageYield.toFixed(2)} Gramm</p>`;
+output.innerHTML = html;
 
-        document.getElementById("calculate-btn").addEventListener("click", () => {
-            const members = parseInt(document.getElementById("members").value, 10);
-            if (!members || members < 1) {
-                document.getElementById("output").innerHTML = '<p class="error-message">Bitte geben Sie eine gültige Mitgliederanzahl ein.</p>';
-                return;
-            }
+// Event-Listener für den Button
+document.getElementById("calculate-btn").addEventListener("click", () => {
+    const members = parseInt(document.getElementById("members").value, 10);
 
-            const recommendations = calculateRecommendations(members);
-            const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
-            const plants = Math.ceil(members * (1120 / data.members));
-            const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants);
+    // Ungültige Eingabe behandeln
+    if (!members || members < 1) {
+        document.getElementById("output").innerHTML = '<p class="error-message" role="alert">Bitte geben Sie eine gültige Mitgliederanzahl ein.</p>';
+        return;
+    }
 
-            displayRecommendations(recommendations, subscriptionOptions, totalCost);
-        });
-    </script>
-</body>
-</html>
+    // Berechnung starten
+    const recommendations = calculateRecommendations(members);
+    const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
+    const plants = Math.ceil(members * (1120 / data.members));
+    const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants);
+
+    // Ergebnisse anzeigen
+    displayRecommendations(recommendations, subscriptionOptions, totalCost);
+});
+
+// Validierung der Eingabe
+const inputField = document.getElementById("members");
+const calculateButton = document.getElementById("calculate-btn");
+
+inputField.addEventListener("input", () => {
+    const members = parseInt(inputField.value, 10);
+    calculateButton.disabled = !members || members < 1; // Button deaktivieren, wenn Eingabe ungültig
+});
