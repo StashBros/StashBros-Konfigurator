@@ -55,6 +55,30 @@
             font-size: 0.9em;
             color: #555;
         }
+        /* Wrapper für responsive Tabellen */
+.table-wrapper {
+    overflow-x: auto; /* Aktiviert horizontales Scrollen */
+    margin: 10px 0; /* Abstand vor und nach der Tabelle */
+}
+
+table {
+    width: 100%; /* Tabelle füllt den verfügbaren Platz */
+    border-collapse: collapse; /* Entfernt doppelte Ränder */
+}
+
+th, td {
+    padding: 8px; /* Platz in den Zellen */
+    text-align: left; /* Links ausgerichtet */
+}
+
+@media (max-width: 768px) {
+    table {
+        font-size: 0.9rem; /* Kleinere Schriftgröße */
+    }
+    th, td {
+        padding: 5px; /* Weniger Polsterung */
+    }
+}
     </style>
 </head>
 <body>
@@ -229,29 +253,27 @@ html += `<div class="table-wrapper">
             </tr>
         </thead>
         <tbody>`;
+recommendations.forEach(rec => {
+    const combinationDetails = rec.combination.map(comb => 
+        `${comb.units} x ${comb.size}${rec.name === "Growbag" || rec.name === "Cube" ? " Stück" : " L"}`
+    ).join("<br>");
+    const priceDetails = rec.combination.map(comb => 
+        formatNumber(comb.price)
+    ).join("<br>");
 
-            recommendations.forEach(rec => {
-                const combinationDetails = rec.combination.map(comb => 
-                    `${comb.units} x ${comb.size}${rec.name === "Growbag" || rec.name === "Cube" ? " Stück" : " L"}`
-                ).join("<br>");
-                const priceDetails = rec.combination.map(comb => 
-                    formatNumber(comb.price)
-                ).join("<br>");
-
-                html += `
-                    <tr>
-                        <td>${rec.name}</td>
-                        <td>${rec.totalUsage}</td>
-                        <td>${combinationDetails}</td>
-                        <td>${priceDetails}</td>
-                        <td>${formatNumber(rec.totalCost)}</td>
-                    </tr>`;
-            });
-
-            html += "</tbody></table>";
+    html += `
+        <tr>
+            <td>${rec.name}</td>
+            <td>${rec.totalUsage}</td>
+            <td>${combinationDetails}</td>
+            <td>${priceDetails}</td>
+            <td>${formatNumber(rec.totalCost)}</td>
+        </tr>`;
+});
+html += `</tbody></table></div>`;
             html += `<h3>Gesamtkosten: ${formatNumber(totalCost)}</h3>`;
 
-          html += "<h3>Abo-Optionen</h3>";
+         html += "<h3>Abo-Optionen</h3>";
 html += `<div class="table-wrapper">
     <table>
         <thead>
@@ -267,7 +289,6 @@ html += `<div class="table-wrapper">
             </tr>
         </thead>
         <tbody>`;
-
 subscriptionOptions.forEach(sub => {
     const rabattierteGesamtkosten = sub.weeks === 10
         ? sub.discountedPrice
@@ -281,7 +302,9 @@ subscriptionOptions.forEach(sub => {
         ? sub.discountAmount
         : sub.weeks === 20
         ? sub.discountAmount * 2
-        : sub.discountAmount * 4;
+        : sub.weeks === 40
+        ? sub.discountAmount * 4
+        : 0;
 
     html += `
         <tr>
@@ -295,8 +318,7 @@ subscriptionOptions.forEach(sub => {
             <td>${formatNumber(ersparnis)}</td>
         </tr>`;
 });
-
-html += "</tbody></table>";
+html += `</tbody></table></div>`;
 
             html += `<p class="footnote">* Durchschnittlicher Ertrag pro Pflanze: ${data.averageYield.toFixed(2)} Gramm</p>`;
             output.innerHTML = html;
