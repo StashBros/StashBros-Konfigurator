@@ -216,18 +216,19 @@
 
         function displayRecommendations(recommendations, subscriptionOptions, totalCost) {
             const output = document.getElementById("output");
-            let html = "<h3>Empfohlene Produkte</h3>";
-            html += `<table>
-                <thead>
-                    <tr>
-                        <th>Produkt</th>
-                        <th>Verbrauch 10-Wochen</th>
-                        <th>Fassungsgrößen</th>
-                        <th>Stückpreise (€)</th>
-                        <th>Gesamtkosten (€)</th>
-                    </tr>
-                </thead>
-                <tbody>`;
+            let html += "<h3>Empfohlene Produkte</h3>";
+html += `<div class="table-wrapper">
+    <table>
+        <thead>
+            <tr>
+                <th>Produkt</th>
+                <th>Verbrauch 10-Wochen</th>
+                <th>Fassungsgrößen</th>
+                <th>Stückpreise (€)</th>
+                <th>Gesamtkosten (€)</th>
+            </tr>
+        </thead>
+        <tbody>`;
 
             recommendations.forEach(rec => {
                 const combinationDetails = rec.combination.map(comb => 
@@ -251,20 +252,21 @@
             html += `<h3>Gesamtkosten: ${formatNumber(totalCost)}</h3>`;
 
           html += "<h3>Abo-Optionen</h3>";
-html += `<table>
-    <thead>
-        <tr>
-            <th>Wochen</th>
-            <th>Rabatt</th>
-            <th>Rabattierter Gesamtpreis (€)</th>
-            <th>Rabattierte Gesamtkosten (€)</th>
-            <th>Monatliche Kosten (€)</th>
-            <th>Kosten/Gramm (€)</th>
-            <th>Kosten/Pflanze (€)</th>
-            <th>Ersparnis (€)</th>
-        </tr>
-    </thead>
-    <tbody>`;
+html += `<div class="table-wrapper">
+    <table>
+        <thead>
+            <tr>
+                <th>Wochen</th>
+                <th>Rabatt</th>
+                <th>Rabattierter Gesamtpreis (€)</th>
+                <th>Rabattierte Gesamtkosten (€)</th>
+                <th>Monatliche Kosten (€)</th>
+                <th>Kosten/Gramm (€)</th>
+                <th>Kosten/Pflanze (€)</th>
+                <th>Ersparnis (€)</th>
+            </tr>
+        </thead>
+        <tbody>`;
 
 subscriptionOptions.forEach(sub => {
     const rabattierteGesamtkosten = sub.weeks === 10
