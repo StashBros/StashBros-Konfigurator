@@ -335,34 +335,24 @@ subscriptionOptions.forEach(sub => {
 });
 html += `</tbody></table></div>`;
 
-           html += `<p class="footnote">* Durchschnittlicher Ertrag pro Pflanze: ${data.averageYield.toFixed(2)} Gramm</p>`;
-output.innerHTML = html;
+           html += <p class="footnote">* Durchschnittlicher Ertrag pro Pflanze: ${data.averageYield.toFixed(2)} Gramm</p>;
+            output.innerHTML = html;
+        }
 
-// Button-Click-Ereignis
-document.getElementById("calculate-btn").addEventListener("click", () => {
-    const members = parseInt(document.getElementById("members").value, 10);
+        document.getElementById("calculate-btn").addEventListener("click", () => {
+            const members = parseInt(document.getElementById("members").value, 10);
+            if (!members || members < 1) {
+                document.getElementById("output").innerHTML = '<p class="error-message">Bitte geben Sie eine gültige Mitgliederanzahl ein.</p>';
+                return;
+            }
 
-    // Fehlerbehandlung: Ungültige Eingabe
-    if (!members || members < 1) {
-        document.getElementById("output").innerHTML = '<p class="error-message" role="alert">Bitte geben Sie eine gültige Mitgliederanzahl ein.</p>';
-        return;
-    }
+            const recommendations = calculateRecommendations(members);
+            const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
+            const plants = Math.ceil(members * (1120 / data.members));
+            const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants);
 
-    // Berechnung der Empfehlungen
-    const recommendations = calculateRecommendations(members);
-    const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
-    const plants = Math.ceil(members * (1120 / data.members));
-    const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants);
-
-    // Ergebnisse anzeigen
-    displayRecommendations(recommendations, subscriptionOptions, totalCost);
-});
-
-// Validierung für den Button: Deaktivieren bei ungültigen Eingaben
-const inputField = document.getElementById("members");
-const calculateButton = document.getElementById("calculate-btn");
-
-inputField.addEventListener("input", () => {
-    const members = parseInt(inputField.value, 10);
-    calculateButton.disabled = !members || members < 1; // Button deaktivieren, wenn Eingabe ungültig
-});
+            displayRecommendations(recommendations, subscriptionOptions, totalCost);
+        });
+    </script>
+</body>
+</html>
