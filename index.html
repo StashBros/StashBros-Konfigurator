@@ -273,7 +273,7 @@ subscriptionOptions.forEach(sub => {
         ? sub.discountedPrice * 2
         : sub.discountedPrice * 4;
 
-    const monatlicheKosten = rabattierteGesamtkosten / (sub.weeks / 10);
+    const monatlicheKosten = rabattierteGesamtkosten / (sub.weeks === 10 ? 2.5 : sub.weeks === 20 ? 5 : 10);
 
     const ersparnis = sub.weeks === 10
         ? sub.discountAmount
