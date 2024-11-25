@@ -331,8 +331,12 @@ subscriptionOptions.forEach(sub => {
 });
 html += `</tbody></table></div>`;
 
-            html += `<p class="footnote">* Durchschnittlicher Ertrag pro Pflanze: ${data.averageYield.toFixed(2)} Gramm</p>`;
-            output.innerHTML = html;
+<div class="output" id="output">
+    <!-- Andere Inhalte -->
+    <p class="footnote">* Durchschnittlicher Ertrag pro Pflanze: 66.96 Gramm.</p>
+    <p class="footnote">10 Wochen entsprechen einem Grow-Zyklus.</p>
+</div>
+
         }
 
         document.getElementById("calculate-btn").addEventListener("click", () => {
