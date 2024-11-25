@@ -256,87 +256,94 @@
         }
 
         function displayRecommendations(recommendations, subscriptionOptions, totalCost) {
-            const output = document.getElementById("output");
-            let html += "<h3>Empfohlene Produkte</h3>";
-html = `<div class="table-wrapper">
-    <table>
-        <thead>
+    const output = document.getElementById("output");
+
+    // Initialisierung der Variable html
+    let html = "<h3>Empfohlene Produkte</h3>";
+    html += `<div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Produkt</th>
+                    <th>Verbrauch 10-Wochen</th>
+                    <th>Fassungsgrößen</th>
+                    <th>Stückpreise (€)</th>
+                    <th>Gesamtkosten (€)</th>
+                </tr>
+            </thead>
+            <tbody>`;
+    recommendations.forEach(rec => {
+        const combinationDetails = rec.combination.map(comb => 
+            `${comb.units} x ${comb.size}${rec.name === "Growbag" || rec.name === "Cube" ? " Stück" : " L"}`
+        ).join("<br>");
+        const priceDetails = rec.combination.map(comb => 
+            formatNumber(comb.price)
+        ).join("<br>");
+
+        html += `
             <tr>
-                <th>Produkt</th>
-                <th>Verbrauch 10-Wochen</th>
-                <th>Fassungsgrößen</th>
-                <th>Stückpreise (€)</th>
-                <th>Gesamtkosten (€)</th>
-            </tr>
-        </thead>
-        <tbody>`;
-recommendations.forEach(rec => {
-    const combinationDetails = rec.combination.map(comb => 
-        `${comb.units} x ${comb.size}${rec.name === "Growbag" || rec.name === "Cube" ? " Stück" : " L"}`
-    ).join("<br>");
-    const priceDetails = rec.combination.map(comb => 
-        formatNumber(comb.price)
-    ).join("<br>");
+                <td>${rec.name}</td>
+                <td>${rec.totalUsage}</td>
+                <td>${combinationDetails}</td>
+                <td>${priceDetails}</td>
+                <td>${formatNumber(rec.totalCost)}</td>
+            </tr>`;
+    });
+    html += `</tbody></table></div>`;
+    html += `<h3>Gesamtkosten: ${formatNumber(totalCost)}</h3>`;
 
-    html += `
-        <tr>
-            <td>${rec.name}</td>
-            <td>${rec.totalUsage}</td>
-            <td>${combinationDetails}</td>
-            <td>${priceDetails}</td>
-            <td>${formatNumber(rec.totalCost)}</td>
-        </tr>`;
-});
-html += `</tbody></table></div>`;
-            html += `<h3>Gesamtkosten: ${formatNumber(totalCost)}</h3>`;
+    // Abo-Optionen-Tabelle
+    html += "<h3>Abo-Optionen</h3>";
+    html += `<div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Wochen</th>
+                    <th>Rabatt</th>
+                    <th>Rabattierter Gesamtpreis (€)</th>
+                    <th>Rabattierte Gesamtkosten (€)</th>
+                    <th>Monatliche Kosten (€)</th>
+                    <th>Kosten/Gramm (€)</th>
+                    <th>Kosten/Pflanze (€)</th>
+                    <th>Ersparnis (€)</th>
+                </tr>
+            </thead>
+            <tbody>`;
+    subscriptionOptions.forEach(sub => {
+        const rabattierteGesamtkosten = sub.weeks === 10
+            ? sub.discountedPrice
+            : sub.weeks === 20
+            ? sub.discountedPrice * 2
+            : sub.discountedPrice * 4;
 
-          html += "<h3>Abo-Optionen</h3>";
-html += `<div class="table-wrapper">
-    <table>
-        <thead>
+        const monatlicheKosten = rabattierteGesamtkosten / (sub.weeks === 10 ? 2.5 : sub.weeks === 20 ? 5 : 10);
+
+        const ersparnis = sub.weeks === 10
+            ? sub.discountAmount
+            : sub.weeks === 20
+            ? sub.discountAmount * 2
+            : sub.discountAmount * 4;
+
+        html += `
             <tr>
-                <th>Wochen</th>
-                <th>Rabatt</th>
-                <th>Rabattierter Gesamtpreis (€)</th>
-                <th>Rabattierte Gesamtkosten (€)</th>
-                <th>Monatliche Kosten (€)</th>
-                <th>Kosten/Gramm (€)</th>
-                <th>Kosten/Pflanze (€)</th>
-                <th>Ersparnis (€)</th>
-            </tr>
-        </thead>
-        <tbody>`;
-subscriptionOptions.forEach(sub => {
-    const rabattierteGesamtkosten = sub.weeks === 10
-        ? sub.discountedPrice
-        : sub.weeks === 20
-        ? sub.discountedPrice * 2
-        : sub.discountedPrice * 4;
+                <td>${sub.weeks} Wochen</td>
+                <td>${(sub.discountAmount / totalCost * 100).toFixed(2)}%</td>
+                <td>${formatNumber(sub.discountedPrice)}</td>
+                <td>${formatNumber(rabattierteGesamtkosten)}</td>
+                <td>${formatNumber(monatlicheKosten)}</td>
+                <td>${formatNumber(sub.costPerGram)}</td>
+                <td>${formatNumber(sub.costPerPlant)}</td>
+                <td>${formatNumber(ersparnis)}</td>
+            </tr>`;
+    });
+    html += `</tbody></table></div>`;
 
-    const monatlicheKosten = rabattierteGesamtkosten / (sub.weeks === 10 ? 2.5 : sub.weeks === 20 ? 5 : 10);
+    // Fußnote
+    html += `<p class="footnote">* Durchschnittlicher Ertrag pro Pflanze: ${data.averageYield.toFixed(2)} Gramm</p>`;
 
-    const ersparnis = sub.weeks === 10
-        ? sub.discountAmount
-        : sub.weeks === 20
-        ? sub.discountAmount * 2
-        : sub.discountAmount * 4;
-
-    html += `
-        <tr>
-            <td>${sub.weeks} Wochen</td>
-            <td>${(sub.discountAmount / totalCost * 100).toFixed(2)}%</td>
-            <td>${formatNumber(sub.discountedPrice)}</td>
-            <td>${formatNumber(rabattierteGesamtkosten)}</td>
-            <td>${formatNumber(monatlicheKosten)}</td>
-            <td>${formatNumber(sub.costPerGram)}</td>
-            <td>${formatNumber(sub.costPerPlant)}</td>
-            <td>${formatNumber(ersparnis)}</td>
-        </tr>`;
-});
-html += `</tbody></table></div>`;
-
-           html += `<p class="footnote">* Durchschnittlicher Ertrag pro Pflanze: ${data.averageYield.toFixed(2)} Gramm</p>`;
-output.innerHTML = html;
+    // HTML in den Output-Bereich einfügen
+    output.innerHTML = html;
+}
 
 // Event-Listener für den Button
 document.getElementById("calculate-btn").addEventListener("click", () => {
