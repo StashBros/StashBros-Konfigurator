@@ -4,108 +4,67 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Produkt-Konfigurator</title>
-   <style>
-    /* Globales Styling für den gesamten Konfigurator */
-    body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-        line-height: 1.6;
-    }
-    .container {
-        max-width: 100%; /* Flexibel für große und kleine Geräte */
-        padding: 15px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        background-color: #f9f9f9;
-        box-sizing: border-box; /* Polsterung wird in die Breite einbezogen */
-    }
-    h1 {
-        text-align: center;
-        color: #333;
-        font-size: 1.5rem;
-    }
-    label, input, button {
-        margin: 10px 0;
-        display: block;
-    }
-    input, button {
-        width: 100%; /* Breite für kleine Geräte */
-        max-width: 300px; /* Begrenzung der Breite auf größeren Geräten */
-        margin: 10px auto; /* Zentrierung */
-        padding: 10px;
-        font-size: 1rem;
-    }
-    button {
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-    button:hover {
-        background-color: #45a049;
-    }
-    .output {
-        margin-top: 20px;
-    }
-
-    /* Tabellen: Basisstyling */
-    table {
-        width: 100%; /* Tabelle füllt den Platz aus */
-        border-collapse: collapse;
-        margin-top: 20px;
-    }
-    table, th, td {
-        border: 1px solid #ddd; /* Tabellenränder */
-    }
-    th, td {
-        text-align: left; /* Links ausgerichtet */
-        padding: 10px; /* Platz in den Zellen */
-        word-break: break-word; /* Lange Wörter umbrechen */
-    }
-    th {
-        background-color: #f4f4f4; /* Dezenter Hintergrund für Kopfzeilen */
-    }
-
-    /* Wrapper für responsive Tabellen */
-    .table-wrapper {
-        overflow-x: auto; /* Ermöglicht horizontales Scrollen */
-        margin: 10px 0; /* Abstand vor und nach der Tabelle */
-    }
-
-    /* Fußnote */
-    .footnote {
-        margin-top: 20px;
-        font-size: 0.9em;
-        color: #555;
-    }
-
-    /* Optimierung für kleine Geräte */
-    @media (max-width: 768px) {
+    <style>
         body {
-            font-size: 0.9rem; /* Reduziere die Schriftgröße */
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
         }
-        input, button {
-            font-size: 0.85rem; /* Kleinere Schriftgröße für Eingabefelder */
-            padding: 8px; /* Weniger Polsterung */
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
         }
-        th, td {
-            padding: 5px; /* Kompaktere Zellen */
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label, input, button {
+            margin: 10px 0;
+            display: block;
+        }
+        input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+        }
+        .output {
+            margin-top: 20px;
         }
         table {
-            font-size: 0.9rem; /* Kleinere Tabelleninhalte */
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
         }
-    }
-</style>
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .footnote {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #555;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-    <h1>Produkt-Konfigurator</h1>
-    <label for="members">Mitgliederanzahl:</label>
-    <input type="number" id="members" placeholder="z. B. 500" min="1">
-    <button id="calculate-btn">Empfehlung berechnen</button>
-    <div class="output" id="output"></div>
-</div>
+        <h1>Produkt-Konfigurator</h1>
+        <label for="members">Mitgliederanzahl:</label>
+        <input type="number" id="members" placeholder="z. B. 500" min="1">
+        <button id="calculate-btn">Empfehlung berechnen</button>
+        <div class="output" id="output"></div>
+    </div>
 
     <script>
         const data = {
@@ -256,131 +215,105 @@
         }
 
         function displayRecommendations(recommendations, subscriptionOptions, totalCost) {
-    const output = document.getElementById("output");
+            const output = document.getElementById("output");
+            let html = "<h3>Empfohlene Produkte</h3>";
+            html += `<table>
+                <thead>
+                    <tr>
+                        <th>Produkt</th>
+                        <th>Verbrauch 10-Wochen</th>
+                        <th>Fassungsgrößen</th>
+                        <th>Stückpreise (€)</th>
+                        <th>Gesamtkosten (€)</th>
+                    </tr>
+                </thead>
+                <tbody>`;
 
-    // Initialisierung der Variable html
-    let html = "<h3>Empfohlene Produkte</h3>";
-    html += `<div class="table-wrapper">
-        <table>
-            <thead>
-                <tr>
-                    <th>Produkt</th>
-                    <th>Verbrauch 10-Wochen</th>
-                    <th>Fassungsgrößen</th>
-                    <th>Stückpreise (€)</th>
-                    <th>Gesamtkosten (€)</th>
-                </tr>
-            </thead>
-            <tbody>`;
-    recommendations.forEach(rec => {
-        const combinationDetails = rec.combination.map(comb => 
-            `${comb.units} x ${comb.size}${rec.name === "Growbag" || rec.name === "Cube" ? " Stück" : " L"}`
-        ).join("<br>");
-        const priceDetails = rec.combination.map(comb => 
-            formatNumber(comb.price)
-        ).join("<br>");
+            recommendations.forEach(rec => {
+                const combinationDetails = rec.combination.map(comb => 
+                    `${comb.units} x ${comb.size}${rec.name === "Growbag" || rec.name === "Cube" ? " Stück" : " L"}`
+                ).join("<br>");
+                const priceDetails = rec.combination.map(comb => 
+                    formatNumber(comb.price)
+                ).join("<br>");
 
-        html += `
-            <tr>
-                <td>${rec.name}</td>
-                <td>${rec.totalUsage}</td>
-                <td>${combinationDetails}</td>
-                <td>${priceDetails}</td>
-                <td>${formatNumber(rec.totalCost)}</td>
-            </tr>`;
-    });
-    html += `</tbody></table></div>`;
-    html += `<h3>Gesamtkosten: ${formatNumber(totalCost)}</h3>`;
+                html += `
+                    <tr>
+                        <td>${rec.name}</td>
+                        <td>${rec.totalUsage}</td>
+                        <td>${combinationDetails}</td>
+                        <td>${priceDetails}</td>
+                        <td>${formatNumber(rec.totalCost)}</td>
+                    </tr>`;
+            });
 
-    // Abo-Optionen-Tabelle
-    html += "<h3>Abo-Optionen</h3>";
-    html += `<div class="table-wrapper">
-        <table>
-            <thead>
-                <tr>
-                    <th>Wochen</th>
-                    <th>Rabatt</th>
-                    <th>Rabattierter Gesamtpreis (€)</th>
-                    <th>Rabattierte Gesamtkosten (€)</th>
-                    <th>Monatliche Kosten (€)</th>
-                    <th>Kosten/Gramm (€)</th>
-                    <th>Kosten/Pflanze (€)</th>
-                    <th>Ersparnis (€)</th>
-                </tr>
-            </thead>
-            <tbody>`;
-    subscriptionOptions.forEach(sub => {
-        const rabattierteGesamtkosten = sub.weeks === 10
-            ? sub.discountedPrice
-            : sub.weeks === 20
-            ? sub.discountedPrice * 2
-            : sub.discountedPrice * 4;
+            html += "</tbody></table>";
+            html += `<h3>Gesamtkosten: ${formatNumber(totalCost)}</h3>`;
 
-        const monatlicheKosten = rabattierteGesamtkosten / (sub.weeks === 10 ? 2.5 : sub.weeks === 20 ? 5 : 10);
+          html += "<h3>Abo-Optionen</h3>";
+html += `<table>
+    <thead>
+        <tr>
+            <th>Wochen</th>
+            <th>Rabatt</th>
+            <th>Rabattierter Gesamtpreis (€)</th>
+            <th>Rabattierte Gesamtkosten (€)</th>
+            <th>Monatliche Kosten (€)</th>
+            <th>Kosten/Gramm (€)</th>
+            <th>Kosten/Pflanze (€)</th>
+            <th>Ersparnis (€)</th>
+        </tr>
+    </thead>
+    <tbody>`;
 
-        const ersparnis = sub.weeks === 10
-            ? sub.discountAmount
-            : sub.weeks === 20
-            ? sub.discountAmount * 2
-            : sub.discountAmount * 4;
+subscriptionOptions.forEach(sub => {
+    const rabattierteGesamtkosten = sub.weeks === 10
+        ? sub.discountedPrice
+        : sub.weeks === 20
+        ? sub.discountedPrice * 2
+        : sub.discountedPrice * 4;
 
-        html += `
-            <tr>
-                <td>${sub.weeks} Wochen</td>
-                <td>${(sub.discountAmount / totalCost * 100).toFixed(2)}%</td>
-                <td>${formatNumber(sub.discountedPrice)}</td>
-                <td>${formatNumber(rabattierteGesamtkosten)}</td>
-                <td>${formatNumber(monatlicheKosten)}</td>
-                <td>${formatNumber(sub.costPerGram)}</td>
-                <td>${formatNumber(sub.costPerPlant)}</td>
-                <td>${formatNumber(ersparnis)}</td>
-            </tr>`;
-    });
-    html += `</tbody></table></div>`;
+    const monatlicheKosten = rabattierteGesamtkosten / (sub.weeks === 10 ? 2.5 : sub.weeks === 20 ? 5 : 10);
 
-    // Fußnote
-    html += `<p class="footnote">* Durchschnittlicher Ertrag pro Pflanze: ${data.averageYield.toFixed(2)} Gramm</p>`;
+    const ersparnis = sub.weeks === 10
+        ? sub.discountAmount
+        : sub.weeks === 20
+        ? sub.discountAmount * 2
+        : sub.discountAmount * 4;
 
-    // HTML in den Output-Bereich einfügen
-    output.innerHTML = html;
-}
-
-document.getElementById("calculate-btn").addEventListener("click", () => {
-    const output = document.getElementById("output");
-    output.innerHTML = ""; // Zurücksetzen der vorherigen Ausgabe
-
-    console.log("Button wurde geklickt."); // Debugging
-
-    // Eingabe abrufen
-    const members = parseInt(document.getElementById("members").value, 10);
-    console.log("Eingegebene Mitgliederanzahl:", members); // Debugging
-
-    // Gültigkeit der Eingabe prüfen
-    if (!members || members < 1) {
-        console.log("Ungültige Eingabe:", members); // Debugging
-        output.innerHTML = '<p class="error-message" role="alert">Bitte geben Sie eine gültige Mitgliederanzahl ein.</p>';
-        return;
-    }
-
-    try {
-        // Empfehlungen berechnen
-        const recommendations = calculateRecommendations(members);
-        console.log("Empfehlungen berechnet:", recommendations); // Debugging
-
-        // Gesamtkosten berechnen
-        const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
-        console.log("Gesamtkosten berechnet:", totalCost); // Debugging
-
-        // Abo-Optionen berechnen
-        const plants = Math.ceil(members * (1120 / data.members));
-        const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants);
-        console.log("Abo-Optionen berechnet:", subscriptionOptions); // Debugging
-
-        // Ergebnisse anzeigen
-        displayRecommendations(recommendations, subscriptionOptions, totalCost);
-        console.log("Ergebnisse erfolgreich angezeigt."); // Debugging
-    } catch (error) {
-        console.error("Fehler bei der Berechnung:", error);
-        output.innerHTML = '<p class="error-message" role="alert">Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.</p>';
-    }
+    html += `
+        <tr>
+            <td>${sub.weeks} Wochen</td>
+            <td>${(sub.discountAmount / totalCost * 100).toFixed(2)}%</td>
+            <td>${formatNumber(sub.discountedPrice)}</td>
+            <td>${formatNumber(rabattierteGesamtkosten)}</td>
+            <td>${formatNumber(monatlicheKosten)}</td>
+            <td>${formatNumber(sub.costPerGram)}</td>
+            <td>${formatNumber(sub.costPerPlant)}</td>
+            <td>${formatNumber(ersparnis)}</td>
+        </tr>`;
 });
+
+html += "</tbody></table>";
+
+            html += `<p class="footnote">* Durchschnittlicher Ertrag pro Pflanze: ${data.averageYield.toFixed(2)} Gramm</p>`;
+            output.innerHTML = html;
+        }
+
+        document.getElementById("calculate-btn").addEventListener("click", () => {
+            const members = parseInt(document.getElementById("members").value, 10);
+            if (!members || members < 1) {
+                document.getElementById("output").innerHTML = '<p class="error-message">Bitte geben Sie eine gültige Mitgliederanzahl ein.</p>';
+                return;
+            }
+
+            const recommendations = calculateRecommendations(members);
+            const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
+            const plants = Math.ceil(members * (1120 / data.members));
+            const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants);
+
+            displayRecommendations(recommendations, subscriptionOptions, totalCost);
+        });
+    </script>
+</body>
+</html>
