@@ -248,88 +248,144 @@ th, td {
             });
         }
 
-        function displayRecommendations(recommendations, subscriptionOptions, totalCost) {
+       function displayRecommendations(recommendations, subscriptionOptions, totalCost) {
     const output = document.getElementById("output");
-    let html = ""; // KORREKT: Variable wird initialisiert
-    html += "<h3>Empfohlene Produkte</h3>";
-html += `<div class="table-wrapper">
-    <table>
-        <thead>
+    let html = ""; // Initialisierung des HTML-Strings
+
+    // Empfohlene Produkte
+    html += `<h3>Empfohlene Produkte</h3>`;
+    html += `<div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Produkt</th>
+                    <th>Verbrauch 10-Wochen</th>
+                    <th>Fassungsgrößen</th>
+                    <th>Stückpreise (€)</th>
+                    <th>Gesamtkosten (€)</th>
+                </tr>
+            </thead>
+            <tbody>`;
+    recommendations.forEach(rec => {
+        const combinationDetails = rec.combination.map(comb => 
+            `${comb.units} x ${comb.size}${rec.name === "Growbag" || rec.name === "Cube" ? " Stück" : " L"}`
+        ).join("<br>");
+        const priceDetails = rec.combination.map(comb => 
+            formatNumber(comb.price)
+        ).join("<br>");
+
+        html += `
             <tr>
-                <th>Produkt</th>
-                <th>Verbrauch 10-Wochen</th>
-                <th>Fassungsgrößen</th>
-                <th>Stückpreise (€)</th>
-                <th>Gesamtkosten (€)</th>
-            </tr>
-        </thead>
-        <tbody>`;
-recommendations.forEach(rec => {
-    const combinationDetails = rec.combination.map(comb => 
-        `${comb.units} x ${comb.size}${rec.name === "Growbag" || rec.name === "Cube" ? " Stück" : " L"}`
-    ).join("<br>");
-    const priceDetails = rec.combination.map(comb => 
-        formatNumber(comb.price)
-    ).join("<br>");
+                <td>${rec.name}</td>
+                <td>${rec.totalUsage}</td>
+                <td>${combinationDetails}</td>
+                <td>${priceDetails}</td>
+                <td>${formatNumber(rec.totalCost)}</td>
+            </tr>`;
+    });
+    html += `</tbody></table></div>`;
+    html += `<h3>Gesamtkosten: ${formatNumber(totalCost)}</h3>`;
 
-    html += `
-        <tr>
-            <td>${rec.name}</td>
-            <td>${rec.totalUsage}</td>
-            <td>${combinationDetails}</td>
-            <td>${priceDetails}</td>
-            <td>${formatNumber(rec.totalCost)}</td>
-        </tr>`;
-});
-html += `</tbody></table></div>`;
-            html += `<h3>Gesamtkosten: ${formatNumber(totalCost)}</h3>`;
+    // Abo-Optionen
+    html += `<h3>Abo-Optionen</h3>`;
+    html += `<div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Wochen</th>
+                    <th>Rabatt</th>
+                    <th>Rabattierter Gesamtpreis (€)</th>
+                    <th>Rabattierte Gesamtkosten (€)</th>
+                    <th>Monatliche Kosten (€)</th>
+                    <th>Kosten/Gramm (€)</th>
+                    <th>Kosten/Pflanze (€)</th>
+                    <th>Ersparnis (€)</th>
+                </tr>
+            </thead>
+            <tbody>`;
+    subscriptionOptions.forEach(sub => {
+        const rabattierteGesamtkosten = sub.weeks === 10
+            ? sub.discountedPrice
+            : sub.weeks === 20
+            ? sub.discountedPrice * 2
+            : sub.discountedPrice * 4;
 
-         html += "<h3>Abo-Optionen</h3>";
-html += `<div class="table-wrapper">
-    <table>
-        <thead>
+        const monatlicheKosten = rabattierteGesamtkosten / (sub.weeks === 10 ? 2.5 : sub.weeks === 20 ? 5 : 10);
+
+        const ersparnis = sub.weeks === 10
+            ? sub.discountAmount
+            : sub.weeks === 20
+            ? sub.discountAmount * 2
+            : sub.weeks === 40
+            ? sub.discountAmount * 4
+            : 0;
+
+        html += `
             <tr>
-                <th>Wochen</th>
-                <th>Rabatt</th>
-                <th>Rabattierter Gesamtpreis (€)</th>
-                <th>Rabattierte Gesamtkosten (€)</th>
-                <th>Monatliche Kosten (€)</th>
-                <th>Kosten/Gramm (€)</th>
-                <th>Kosten/Pflanze (€)</th>
-                <th>Ersparnis (€)</th>
-            </tr>
-        </thead>
-        <tbody>`;
-subscriptionOptions.forEach(sub => {
-    const rabattierteGesamtkosten = sub.weeks === 10
-        ? sub.discountedPrice
-        : sub.weeks === 20
-        ? sub.discountedPrice * 2
-        : sub.discountedPrice * 4;
+                <td>${sub.weeks} Wochen</td>
+                <td>${(sub.discountAmount / totalCost * 100).toFixed(2)}%</td>
+                <td>${formatNumber(sub.discountedPrice)}</td>
+                <td>${formatNumber(rabattierteGesamtkosten)}</td>
+                <td>${formatNumber(monatlicheKosten)}</td>
+                <td>${formatNumber(sub.costPerGram)}</td>
+                <td>${formatNumber(sub.costPerPlant)}</td>
+                <td>${formatNumber(ersparnis)}</td>
+            </tr>`;
+    });
+    html += `</tbody></table></div>`;
 
-    const monatlicheKosten = rabattierteGesamtkosten / (sub.weeks === 10 ? 2.5 : sub.weeks === 20 ? 5 : 10);
+    // Abo-Optionen-Auswahl und Anfrage senden Button
+    html += `<h4>Wählen Sie eine Abo-Option:</h4>
+    <select id="subscription-select" style="width: 100%; padding: 10px; margin-bottom: 20px;">
+        <option value="" disabled selected>Bitte eine Abo-Option wählen</option>`;
+    subscriptionOptions.forEach(sub => {
+        html += `<option value="${sub.weeks}">${sub.weeks} Wochen - ${formatNumber(sub.discountedPrice)}</option>`;
+    });
+    html += `</select>`;
+    html += `<button id="send-email-btn" style="margin-top: 20px;">Anfrage senden</button>`;
 
-    const ersparnis = sub.weeks === 10
-        ? sub.discountAmount
-        : sub.weeks === 20
-        ? sub.discountAmount * 2
-        : sub.weeks === 40
-        ? sub.discountAmount * 4
-        : 0;
+    // Anzeige des generierten Inhalts
+    output.innerHTML = html;
 
-    html += `
-        <tr>
-            <td>${sub.weeks} Wochen</td>
-            <td>${(sub.discountAmount / totalCost * 100).toFixed(2)}%</td>
-            <td>${formatNumber(sub.discountedPrice)}</td>
-            <td>${formatNumber(rabattierteGesamtkosten)}</td>
-            <td>${formatNumber(monatlicheKosten)}</td>
-            <td>${formatNumber(sub.costPerGram)}</td>
-            <td>${formatNumber(sub.costPerPlant)}</td>
-            <td>${formatNumber(ersparnis)}</td>
-        </tr>`;
-});
-html += `</tbody></table></div>`;
+    // Event-Listener für den Anfrage-Button
+    document.getElementById("send-email-btn").addEventListener("click", () => {
+        const selectedOption = document.getElementById("subscription-select").value;
+
+        if (!selectedOption) {
+            alert("Bitte wählen Sie eine Abo-Option aus, bevor Sie fortfahren.");
+            return;
+        }
+
+        const email = "info@stashbros.de";
+        const subject = "Anfrage von StashBros Produkt-Konfigurator";
+        
+        // Die Empfehlungsdaten als Text vorbereiten
+        let body = "Hier ist die Anfrage basierend auf Ihrer Eingabe:\n\n";
+
+        // Produkt-Empfehlungen hinzufügen
+        recommendations.forEach(rec => {
+            body += `Produkt: ${rec.name}\n`;
+            body += `Verbrauch: ${rec.totalUsage}\n`;
+            rec.combination.forEach(comb => {
+                body += `  - ${comb.units} x ${comb.size} (${formatNumber(comb.price)} pro Einheit)\n`;
+            });
+            body += `Gesamtkosten: ${formatNumber(rec.totalCost)}\n\n`;
+        });
+
+        // Gesamtkosten und die ausgewählte Abo-Option hinzufügen
+        const selectedSub = subscriptionOptions.find(sub => sub.weeks == selectedOption);
+        body += `Gewählte Abo-Option: ${selectedSub.weeks} Wochen\n`;
+        body += `Rabattierter Gesamtpreis: ${formatNumber(selectedSub.discountedPrice)}\n`;
+        body += `Rabattierte Gesamtkosten: ${formatNumber(selectedSub.discountedPrice * (selectedSub.weeks / 10))}\n`;
+        body += `Monatliche Kosten: ${formatNumber(selectedSub.monthlyCost)}\n\n`;
+
+        // E-Mail-Link generieren
+        const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+        // E-Mail-Client öffnen
+        window.location.href = mailtoLink;
+    });
+}
 
   html += `<p class="footnote">* Durchschnittlicher Ertrag pro Pflanze: ${data.averageYield.toFixed(2)} Gramm.</p>`;
             output.innerHTML = html;
