@@ -365,7 +365,7 @@ html += `</tbody></table></div>`;
             displayRecommendations(recommendations, subscriptionOptions, totalCost);
         });
         
-        document.addEventListener("click", (event) => {
+       document.addEventListener("click", (event) => {
     if (event.target.id === "send-recommendation") {
         const selectedOption = document.getElementById("subscription-choice").value;
         const members = document.getElementById("members").value; // Hole die Mitgliederanzahl
@@ -388,25 +388,28 @@ html += `</tbody></table></div>`;
         const selectedRow = Array.from(subscriptionTable.querySelectorAll("tr"))
             .find(row => row.innerText.includes(`${selectedOption} Wochen`)).outerHTML;
 
-        // E-Mail-Inhalt erstellen
+        // HTML-E-Mail-Inhalt
         const emailBody = `
-        <p>Hallo StashBros-Team,</p>
-        <p>Ein Kunde hat die folgende Empfehlung berechnen lassen und sich für die Abo-Option <b>${selectedOption} Wochen</b> entschieden.</p>
-        <p><b>Mitgliederanzahl:</b> ${members}</p>
-        <h3>Empfehlungen:</h3>
-        ${recommendationsTable}
-        <h3>Ausgewählte Abo-Option:</h3>
-        <table>${selectedRow}</table>
-        <p>Mit freundlichen Grüßen,<br>Ihr Produkt-Konfigurator</p>
+        <html>
+            <body>
+                <p>Hallo StashBros-Team,</p>
+                <p>Ich habe die folgende Empfehlung berechnen lassen und interessiere mich für die Abo-Option <b>${selectedOption} Wochen</b>.</p>
+                <p><b>Mitgliederanzahl:</b> ${members}</p>
+                <h3>Empfehlungen:</h3>
+                ${recommendationsTable}
+                <h3>Ausgewählte Abo-Option:</h3>
+                <table>${selectedRow}</table>
+                <p>Mit freundlichen Grüßen,<br>Ihr Produkt-Konfigurator</p>
+            </body>
+        </html>
         `;
 
-        // Generiere den mailto-Link mit HTML-Inhalt
+        // Generiere den mailto-Link
         const email = "info@stashbros.de";
         const subject = `Empfehlung: ${selectedOption}-Wochen Abo-Option, ${members} Mitglieder`;
-        const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
 
-        // Öffne das Standard-E-Mail-Programm
-        window.location.href = mailtoLink;
+        // Öffne das Standard-E-Mail-Programm mit dem HTML-Inhalt
+        window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
     }
 });
     </script>
