@@ -330,18 +330,6 @@ subscriptionOptions.forEach(sub => {
         </tr>`;
 });
 html += `</tbody></table></div>`;
-            
-            html += `
-    <div>
-        <label for="subscription-choice" style="margin-top: 20px; display: block;">Wählen Sie eine Abo-Option:</label>
-        <select id="subscription-choice" style="width: 100%; padding: 10px; margin-bottom: 20px;">
-            <option value="" selected>Bitte wählen...</option>
-            <option value="10">10 Wochen</option>
-            <option value="20">20 Wochen</option>
-            <option value="40">40 Wochen</option>
-        </select>
-        <button id="send-recommendation" style="background-color: #4CAF50; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer;">Empfehlung abschicken</button>
-    </div>`;
 
   html += `<p class="footnote">* Durchschnittlicher Ertrag pro Pflanze: ${data.averageYield.toFixed(2)} Gramm.</p>`;
             output.innerHTML = html;
