@@ -380,21 +380,27 @@ html += `</tbody></table></div>`;
             return;
         }
 
-        // Hole die Empfehlungen und Abo-Optionen aus dem DOM
-        const recommendationsTable = document.querySelector("#output").innerHTML; // Die gesamte Empfehlungstabelle
+        // Hole die gesamte Empfehlungstabelle
+        const recommendationsTable = document.querySelector("#output").querySelector(".table-wrapper").innerHTML;
+
+        // Extrahiere die ausgewählte Abo-Option als HTML-Zeile
+        const subscriptionTable = document.querySelector("#output").querySelectorAll("table")[1]; // Die zweite Tabelle (Abo-Optionen)
+        const selectedRow = Array.from(subscriptionTable.querySelectorAll("tr"))
+            .find(row => row.innerText.includes(`${selectedOption} Wochen`)).outerHTML;
+
+        // E-Mail-Inhalt erstellen
         const emailBody = `
-        Hallo StashBros-Team,
+        <p>Hallo StashBros-Team,</p>
+        <p>Ein Kunde hat die folgende Empfehlung berechnen lassen und sich für die Abo-Option <b>${selectedOption} Wochen</b> entschieden.</p>
+        <p><b>Mitgliederanzahl:</b> ${members}</p>
+        <h3>Empfehlungen:</h3>
+        ${recommendationsTable}
+        <h3>Ausgewählte Abo-Option:</h3>
+        <table>${selectedRow}</table>
+        <p>Mit freundlichen Grüßen,<br>Ihr Produkt-Konfigurator</p>
+        `;
 
-        ich habe die folgende Empfehlung berechnen lassen und interessiere mich für die Abo-Option ${selectedOption} Wochen.
-
-        Mitgliederanzahl: ${members}
-
-        --- Empfehlungen und Kosten ---
-        ${cleanHTMLForEmail(recommendationsTable)}
-
-        Mit freundlichen Grüßen,`;
-
-        // Generiere den mailto-Link mit Betreff und Inhalt
+        // Generiere den mailto-Link mit HTML-Inhalt
         const email = "info@stashbros.de";
         const subject = `Empfehlung: ${selectedOption}-Wochen Abo-Option, ${members} Mitglieder`;
         const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
@@ -403,22 +409,6 @@ html += `</tbody></table></div>`;
         window.location.href = mailtoLink;
     }
 });
-        function cleanHTMLForEmail(html) {
-    // Konvertiere Tabellen-HTML in Klartext
-    return html
-        .replace(/<table>/g, "\n") // Beginne eine Tabelle
-        .replace(/<\/table>/g, "\n") // Ende der Tabelle
-        .replace(/<thead>/g, "") // Entferne unnötige thead-Tags
-        .replace(/<\/thead>/g, "")
-        .replace(/<tr>/g, "\n") // Jede Zeile beginnt mit einem Zeilenumbruch
-        .replace(/<\/tr>/g, "")
-        .replace(/<th>/g, "") // Tabellenkopf
-        .replace(/<\/th>/g, "\t") // Trenne Kopfzellen mit Tabs
-        .replace(/<td>/g, "") // Tabellenzelle
-        .replace(/<\/td>/g, "\t") // Trenne Zellen mit Tabs
-        .replace(/<br>/g, "\n") // Zeilenumbrüche in Zellen
-        .replace(/<[^>]+>/g, ""); // Entferne alle übrigen HTML-Tags
-}
     </script>
 </body>
 </html>
