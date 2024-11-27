@@ -330,6 +330,18 @@ subscriptionOptions.forEach(sub => {
         </tr>`;
 });
 html += `</tbody></table></div>`;
+            
+            html += `
+    <div>
+        <label for="subscription-choice" style="margin-top: 20px; display: block;">Wählen Sie eine Abo-Option:</label>
+        <select id="subscription-choice" style="width: 100%; padding: 10px; margin-bottom: 20px;">
+            <option value="" selected>Bitte wählen...</option>
+            <option value="10">10 Wochen</option>
+            <option value="20">20 Wochen</option>
+            <option value="40">40 Wochen</option>
+        </select>
+        <button id="send-recommendation" style="background-color: #4CAF50; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer;">Empfehlung abschicken</button>
+    </div>`;
 
   html += `<p class="footnote">* Durchschnittlicher Ertrag pro Pflanze: ${data.averageYield.toFixed(2)} Gramm.</p>`;
             output.innerHTML = html;
@@ -352,6 +364,62 @@ html += `</tbody></table></div>`;
 
             displayRecommendations(recommendations, subscriptionOptions, totalCost);
         });
+        
+        document.addEventListener("click", (event) => {
+    if (event.target.id === "send-recommendation") {
+        const selectedOption = document.getElementById("subscription-choice").value;
+        const members = document.getElementById("members").value; // Hole die Mitgliederanzahl
+
+        if (!selectedOption) {
+            alert("Bitte wählen Sie eine Abo-Option aus, bevor Sie die Anfrage abschicken.");
+            return;
+        }
+
+        if (!members || parseInt(members, 10) < 1) {
+            alert("Bitte geben Sie eine gültige Mitgliederanzahl ein, bevor Sie die Anfrage abschicken.");
+            return;
+        }
+
+        // Hole die Empfehlungen und Abo-Optionen
+        const recommendationsTable = document.querySelector("#output").innerHTML; // Die gesamte Empfehlungstabelle
+        const emailBody = `
+        Hallo StashBros-Team,
+
+       ich habe die folgende Empfehlung berechnen lassen und interessiere mich für die Abo-Option ${selectedOption} Wochen.
+
+        Mitgliederanzahl: ${members}
+
+        Empfehlungen und Kosten:
+        ---------------------------------------
+        ${cleanHTMLForEmail(recommendationsTable)}
+
+        Mit freundlichen Grüßen,`;
+
+        // Generiere den mailto-Link mit Mitgliederanzahl und Abo-Option im Betreff
+        const email = "info@stashbros.de";
+        const subject = `Empfehlung: ${selectedOption}-Wochen Abo-Option, ${members} Mitglieder`;
+        const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+
+        // Öffne das Standard-E-Mail-Programm
+        window.location.href = mailtoLink;
+    }
+});
+
+// Funktion zum Säubern des HTML für den E-Mail-Text
+function cleanHTMLForEmail(html) {
+    // Ersetze HTML-Tags durch Klartext
+    return html
+        .replace(/<thead>/g, "\n") // Kopfzeile der Tabelle
+        .replace(/<\/thead>/g, "\n")
+        .replace(/<tr>/g, "\n") // Jede Zeile
+        .replace(/<\/tr>/g, "")
+        .replace(/<th>/g, "") // Tabellenkopf
+        .replace(/<\/th>/g, "\t")
+        .replace(/<td>/g, "") // Tabellenzelle
+        .replace(/<\/td>/g, "\t")
+        .replace(/<br>/g, "\n") // Zeilenumbruch in der Tabelle
+        .replace(/<[^>]+>/g, ""); // Entfernt alle verbleibenden HTML-Tags
+}
     </script>
 </body>
 </html>
