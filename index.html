@@ -380,35 +380,23 @@ html += `</tbody></table></div>`;
             return;
         }
 
-        // Hole die gesamte Empfehlungstabelle
-        const recommendationsTable = document.querySelector("#output").querySelector(".table-wrapper").innerHTML;
-
-        // Extrahiere die ausgewählte Abo-Option als HTML-Zeile
-        const subscriptionTable = document.querySelector("#output").querySelectorAll("table")[1]; // Die zweite Tabelle (Abo-Optionen)
-        const selectedRow = Array.from(subscriptionTable.querySelectorAll("tr"))
-            .find(row => row.innerText.includes(`${selectedOption} Wochen`)).outerHTML;
-
-        // HTML-E-Mail-Inhalt
+        // Einfache Nachricht für die E-Mail
         const emailBody = `
-        <html>
-            <body>
-                <p>Hallo StashBros-Team,</p>
-                <p>Ich habe die folgende Empfehlung berechnen lassen und interessiere mich für die Abo-Option <b>${selectedOption} Wochen</b>.</p>
-                <p><b>Mitgliederanzahl:</b> ${members}</p>
-                <h3>Empfehlungen:</h3>
-                ${recommendationsTable}
-                <h3>Ausgewählte Abo-Option:</h3>
-                <table>${selectedRow}</table>
-                <p>Mit freundlichen Grüßen,<br>Ihr Produkt-Konfigurator</p>
-            </body>
-        </html>
-        `;
+        Hallo StashBros-Team,
+
+        ich habe die Empfehlung berechnen lassen und interessiere mich für die Abo-Option ${selectedOption} Wochen bei ${members} Mitgliedern.
+ 
+ Sie können mich für weitere Rückfragen unter folgenden Kontaktdaten erreichen:
+        - Telefon: [Hier Telefonnummer einfügen]
+        - E-Mail: [Hier E-Mail-Adresse einfügen]
+        
+        Mit freundlichen Grüßen,`;
 
         // Generiere den mailto-Link
         const email = "info@stashbros.de";
         const subject = `Empfehlung: ${selectedOption}-Wochen Abo-Option, ${members} Mitglieder`;
 
-        // Öffne das Standard-E-Mail-Programm mit dem HTML-Inhalt
+        // Öffne das Standard-E-Mail-Programm mit dem einfachen Text
         window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
     }
 });
