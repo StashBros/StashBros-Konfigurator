@@ -88,6 +88,22 @@ th, td {
     margin-bottom: 15px; /* Abstand zu den nächsten Elementen */
     display: block; /* Sicherstellen, dass der Untertitel wie ein Block behandelt wird */
 }
+        /* Standard-Stil des Buttons */
+    .send-button {
+        background-color: #007BFF; /* Standardfarbe: Blau */
+        color: white; /* Textfarbe: Weiß */
+        padding: 10px; /* Abstand im Button */
+        border: none; /* Keine Umrandung */
+        border-radius: 5px; /* Abgerundete Ecken */
+        cursor: pointer; /* Zeiger zeigt Hand an */
+        font-size: 16px; /* Schriftgröße */
+        transition: background-color 0.3s ease, color 0.3s ease; /* Sanfter Farbwechsel */
+    }
+
+    /* Stil beim Hover (Maus über dem Button) */
+    .send-button:hover {
+        background-color: #0056b3; /* Dunkleres Blau */
+        color: #FFF; /* Text bleibt weiß */
     </style>
 </head>
 <body>
@@ -340,7 +356,7 @@ html += `</tbody></table></div>`;
             <option value="20">20 Wochen</option>
             <option value="40">40 Wochen</option>
         </select>
-<button id="send-recommendation" style="background-color: #007BFF; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer;">Anfrage senden</button>
+<button id="send-recommendation" class="send-button">Anfrage senden</button>
     </div>`;
 
   html += `<p class="footnote">* Durchschnittlicher Ertrag pro Pflanze: ${data.averageYield.toFixed(2)} Gramm.</p>`;
@@ -387,6 +403,7 @@ Hallo StashBros-Team,
 ich habe die Empfehlung berechnen lassen und interessiere mich für die Abo-Option ${selectedOption} Wochen bei ${members} Mitgliedern.
 
 Sie können mich für weitere Rückfragen unter folgenden Kontaktdaten erreichen:
+
 - Club - Name: [Hier Club-Namen einfügen]
 - Telefon: [Hier Telefonnummer einfügen]
 - E-Mail: [Hier E-Mail-Adresse einfügen]
