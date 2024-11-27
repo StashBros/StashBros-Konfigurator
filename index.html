@@ -371,31 +371,30 @@ html += `</tbody></table></div>`;
         const members = document.getElementById("members").value; // Hole die Mitgliederanzahl
 
         if (!selectedOption) {
-            alert("Bitte wählen Sie eine Abo-Option aus, bevor Sie die Anfrage abschicken.");
+            alert("Bitte wählen Sie eine Abo-Option aus, bevor Sie die Empfehlung abschicken.");
             return;
         }
 
         if (!members || parseInt(members, 10) < 1) {
-            alert("Bitte geben Sie eine gültige Mitgliederanzahl ein, bevor Sie die Anfrage abschicken.");
+            alert("Bitte geben Sie eine gültige Mitgliederanzahl ein, bevor Sie die Empfehlung abschicken.");
             return;
         }
 
-        // Hole die Empfehlungen und Abo-Optionen
+        // Hole die Empfehlungen und Abo-Optionen aus dem DOM
         const recommendationsTable = document.querySelector("#output").innerHTML; // Die gesamte Empfehlungstabelle
         const emailBody = `
         Hallo StashBros-Team,
 
-       ich habe die folgende Empfehlung berechnen lassen und interessiere mich für die Abo-Option ${selectedOption} Wochen.
+        ich habe die folgende Empfehlung berechnen lassen und interessiere mich für die Abo-Option ${selectedOption} Wochen.
 
         Mitgliederanzahl: ${members}
 
-        Empfehlungen und Kosten:
-        ---------------------------------------
+        --- Empfehlungen und Kosten ---
         ${cleanHTMLForEmail(recommendationsTable)}
 
         Mit freundlichen Grüßen,`;
 
-        // Generiere den mailto-Link mit Mitgliederanzahl und Abo-Option im Betreff
+        // Generiere den mailto-Link mit Betreff und Inhalt
         const email = "info@stashbros.de";
         const subject = `Empfehlung: ${selectedOption}-Wochen Abo-Option, ${members} Mitglieder`;
         const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
@@ -404,21 +403,21 @@ html += `</tbody></table></div>`;
         window.location.href = mailtoLink;
     }
 });
-
-// Funktion zum Säubern des HTML für den E-Mail-Text
-function cleanHTMLForEmail(html) {
-    // Ersetze HTML-Tags durch Klartext
+        function cleanHTMLForEmail(html) {
+    // Konvertiere Tabellen-HTML in Klartext
     return html
-        .replace(/<thead>/g, "\n") // Kopfzeile der Tabelle
-        .replace(/<\/thead>/g, "\n")
-        .replace(/<tr>/g, "\n") // Jede Zeile
+        .replace(/<table>/g, "\n") // Beginne eine Tabelle
+        .replace(/<\/table>/g, "\n") // Ende der Tabelle
+        .replace(/<thead>/g, "") // Entferne unnötige thead-Tags
+        .replace(/<\/thead>/g, "")
+        .replace(/<tr>/g, "\n") // Jede Zeile beginnt mit einem Zeilenumbruch
         .replace(/<\/tr>/g, "")
         .replace(/<th>/g, "") // Tabellenkopf
-        .replace(/<\/th>/g, "\t")
+        .replace(/<\/th>/g, "\t") // Trenne Kopfzellen mit Tabs
         .replace(/<td>/g, "") // Tabellenzelle
-        .replace(/<\/td>/g, "\t")
-        .replace(/<br>/g, "\n") // Zeilenumbruch in der Tabelle
-        .replace(/<[^>]+>/g, ""); // Entfernt alle verbleibenden HTML-Tags
+        .replace(/<\/td>/g, "\t") // Trenne Zellen mit Tabs
+        .replace(/<br>/g, "\n") // Zeilenumbrüche in Zellen
+        .replace(/<[^>]+>/g, ""); // Entferne alle übrigen HTML-Tags
 }
     </script>
 </body>
