@@ -349,7 +349,7 @@ html += `</tbody></table></div>`;
             
             html += `
     <div>
-        <label for="subscription-choice" style="margin-top: 20px; display: block;">Wählen Sie eine Abo-Option:</label>
+        <label for="subscription-choice" style="margin-top: 20px; display: block;">Wähle eine Abo-Option:</label>
         <select id="subscription-choice" style="width: 100%; padding: 10px; margin-bottom: 20px;">
             <option value="" selected>Bitte wählen...</option>
             <option value="10">10 Wochen</option>
@@ -387,12 +387,12 @@ html += `</tbody></table></div>`;
         const members = document.getElementById("members").value; // Hole die Mitgliederanzahl
 
         if (!selectedOption) {
-            alert("Bitte wählen Sie eine Abo-Option aus, bevor Sie die Anfrage abschicken.");
+            alert("Bitte wähle eine Abo-Option aus, bevor du die Anfrage abschickst.");
             return;
         }
 
         if (!members || parseInt(members, 10) < 1) {
-            alert("Bitte geben Sie eine gültige Mitgliederanzahl ein, bevor Sie die Anfrage abschicken.");
+            alert("Bitte wähle eine Abo-Option aus, bevor du die Anfrage abschickst");
             return;
         }
 
@@ -402,7 +402,7 @@ Hallo StashBros-Team,
 
 ich habe die Empfehlung berechnen lassen und interessiere mich für die Abo-Option ${selectedOption} Wochen bei ${members} Mitgliedern.
 
-Sie können mich für weitere Rückfragen unter folgenden Kontaktdaten erreichen:
+Ihr könnt mich gerne für weitere Rückfragen unter folgenden Kontaktdaten erreichen:
 
 - Club - Name: [Hier Club-Namen einfügen]
 - Telefon: [Hier Telefonnummer einfügen]
