@@ -121,17 +121,17 @@ th, td {
         members: 500,
         averageYield: 66.96,
         products: [
-            { name: "Wurzel Complex", baseUsage: 61.6, sizes: [20, 10, 5, 2.5, 1, 0.5], prices: [158.10, 91.75, 56.60, 34.20, 16.65, 10.40] },
-            { name: "TNT Complex", baseUsage: 61.6, sizes: [20, 10, 5, 1, 0.5], prices: [51.55, 30.00, 18.45, 6.90, 5.15] },
-            { name: "SuperVit", baseUsage: 0.62, sizes: [0.5, 0.1, 0.05, 0.01], prices: [92.10, 21.95, 15.85, 6.45] },
-            { name: "Coco Substrat", baseUsage: 168, sizes: [20, 10, 5, 1], prices: [46.30, 26.40, 17.05, 6.15] },
-            { name: "PowerZyme", baseUsage: 100.8, sizes: [10, 5, 2.5, 1, 0.5], prices: [60.00, 33.75, 18.70, 8.20, 5.80] },
-            { name: "PK 13/14", baseUsage: 100.8, sizes: [20, 10, 5, 1, 0.5], prices: [86.65, 49.70, 28.45, 7.35, 5.35] },
-            { name: "Boost", baseUsage: 50, sizes: [10, 5, 2.5, 1, 0.5], prices: [48.10, 27.50, 14.80, 7.30, 5.00] }
+            { name: "Wurzel Complex", baseUsage: 61.6, sizes: [20, 10, 5, 2.5, 1, 0.5], prices: [166.00, 96.35, 59.45, 35.90, 17.15, 10.70] },
+            { name: "TNT Complex", baseUsage: 61.6, sizes: [20, 10, 5, 1, 0.5], prices: [54.15, 31.50, 19.35, 7.10, 5.30] },
+            { name: "SuperVit", baseUsage: 0.62, sizes: [0.5, 0.1, 0.05, 0.01], prices: [94.85, 22.60, 16.35, 6.65] },
+            { name: "Coco Substrat", baseUsage: 168, sizes: [20, 10, 5, 1], prices: [48.60, 27.70, 17.90, 6.35] },
+            { name: "PowerZyme", baseUsage: 100.8, sizes: [10, 5, 2.5, 1, 0.5], prices: [63.00, 35.45, 19.65, 8.45, 5.95] },
+            { name: "PK 13/14", baseUsage: 100.8, sizes: [20, 10, 5, 1, 0.5], prices: [91.00, 52.20, 29.85, 7.55, 5.50] },
+            { name: "Boost", baseUsage: 50, sizes: [10, 5, 2.5, 1, 0.5], prices: [50.50, 28.90, 15.55, 7.50, 5.15] }
         ],
         perPlantProducts: [
-            { name: "Growbag", price: 6.99 },
-            { name: "Cube", price: 1.99 }
+            { name: "Growbag", price: 19.99 },
+            { name: "Cube", price: 4.99 }
         ]
     };
 
@@ -244,9 +244,9 @@ th, td {
 
     function calculateSubscriptionOptions(totalCost, plants) {
         const options = [
-            { weeks: 10, discount: 0.0196, months: 2.5 },
-            { weeks: 20, discount: 0.0667, months: 5 },
-            { weeks: 40, discount: 0.1334, months: 10 }
+            { weeks: 10, discount: 0.02, months: 2.5 },
+            { weeks: 20, discount: 0.07, months: 5 },
+            { weeks: 40, discount: 0.15, months: 10 }
         ];
 
         return options.map(option => {
@@ -336,7 +336,7 @@ th, td {
             html += `
                 <tr>
                     <td>${sub.weeks} Wochen</td>
-                    <td>${(sub.discountAmount / totalCost * 100).toFixed(2)}%</td>
+                    <td>${Math.round(sub.discountAmount / totalCost * 100)}%</td>
                     <td>${formatNumber(sub.discountedPrice)}</td>
                     <td>${formatNumber(rabattierteGesamtkosten)}</td>
                     <td>${formatNumber(monatlicheKosten)}</td>
