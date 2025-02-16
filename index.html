@@ -30,7 +30,7 @@
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            width: 100%;
+            width: calc(100% - 22px); /* Adjust width to prevent overlap */
         }
         .output {
             margin-top: 20px;
@@ -56,55 +56,55 @@
             color: #555;
         }
         /* Wrapper für responsive Tabellen */
-        .table-wrapper {
-            overflow-x: auto; /* Aktiviert horizontales Scrollen */
-            margin: 10px 0; /* Abstand vor und nach der Tabelle */
-        }
+.table-wrapper {
+    overflow-x: auto; /* Aktiviert horizontales Scrollen */
+    margin: 10px 0; /* Abstand vor und nach der Tabelle */
+}
 
-        table {
-            width: 100%; /* Tabelle füllt den verfügbaren Platz */
-            border-collapse: collapse; /* Entfernt doppelte Ränder */
-        }
+table {
+    width: 100%; /* Tabelle füllt den verfügbaren Platz */
+    border-collapse: collapse; /* Entfernt doppelte Ränder */
+}
 
-        th, td {
-            padding: 8px; /* Platz in den Zellen */
-            text-align: left; /* Links ausgerichtet */
-        }
+th, td {
+    padding: 8px; /* Platz in den Zellen */
+    text-align: left; /* Links ausgerichtet */
+}
 
-        @media (max-width: 768px) {
-            table {
-                font-size: 0.9rem; /* Kleinere Schriftgröße */
-            }
-            th, td {
-                padding: 5px; /* Weniger Polsterung */
-            }
-        }
-        .subtitle {
-            text-align: center; /* Zentriert den Text */
-            font-size: 0.9rem; /* Kleinere Schriftgröße */
-            font-weight: normal; /* Normale Schrift, nicht fett */
-            color: #555; /* Dezente Schriftfarbe */
-            margin-top: 20px; /* Abstand zum Bild */
-            margin-bottom: 15px; /* Abstand zu den nächsten Elementen */
-            display: block; /* Sicherstellen, dass der Untertitel wie ein Block behandelt wird */
-        }
+@media (max-width: 768px) {
+    table {
+        font-size: 0.9rem; /* Kleinere Schriftgröße */
+    }
+    th, td {
+        padding: 5px; /* Weniger Polsterung */
+    }
+}
+.subtitle {
+    text-align: center; /* Zentriert den Text */
+    font-size: 0.9rem; /* Kleinere Schriftgröße */
+    font-weight: normal; /* Normale Schrift, nicht fett */
+    color: #555; /* Dezente Schriftfarbe */
+    margin-top: 20px; /* Abstand zum Bild */
+    margin-bottom: 15px; /* Abstand zu den nächsten Elementen */
+    display: block; /* Sicherstellen, dass der Untertitel wie ein Block behandelt wird */
+}
         /* Standard-Stil des Buttons */
-        .send-button {
-            background-color: #007BFF; /* Standardfarbe: Blau */
-            color: white; /* Textfarbe: Weiß */
-            padding: 10px; /* Abstand im Button */
-            border: none; /* Keine Umrandung */
-            border-radius: 5px; /* Abgerundete Ecken */
-            cursor: pointer; /* Zeiger zeigt Hand an */
-            font-size: 16px; /* Schriftgröße */
-            transition: background-color 0.3s ease, color 0.3s ease; /* Sanfter Farbwechsel */
-        }
+    .send-button {
+        background-color: #007BFF; /* Standardfarbe: Blau */
+        color: white; /* Textfarbe: Weiß */
+        padding: 10px; /* Abstand im Button */
+        border: none; /* Keine Umrandung */
+        border-radius: 5px; /* Abgerundete Ecken */
+        cursor: pointer; /* Zeiger zeigt Hand an */
+        font-size: 16px; /* Schriftgröße */
+        transition: background-color 0.3s ease, color 0.3s ease; /* Sanfter Farbwechsel */
+    }
 
-        /* Stil beim Hover (Maus über dem Button) */
-        .send-button:hover {
-            background-color: #0056b3; /* Dunkleres Blau */
-            color: #FFF; /* Text bleibt weiß */
-        }
+    /* Stil beim Hover (Maus über dem Button) */
+    .send-button:hover {
+        background-color: #0056b3; /* Dunkleres Blau */
+        color: #FFF; /* Text bleibt weiß */
+    }
         /* Responsive image */
         .logo {
             display: block;
