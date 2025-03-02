@@ -113,6 +113,10 @@ th, td {
             height: auto;
             width: 50%; /* Set a maximum width for larger screens */
         }
+    .yield-input {
+        margin: 10px 0;
+        display: block;
+    }
     </style>
 </head>
 <body>
@@ -121,22 +125,24 @@ th, td {
     <p class="subtitle">Ermittle die optimale Produktzusammenstellung für deinen Club.</p>
     <label for="members">Mitgliederanzahl:</label>
     <input type="number" id="members" placeholder="z. B. 500" min="1">
+    <label for="yield">Ertrag pro Pflanze (Gramm):</label>
+    <input type="number" id="yield" class="yield-input" placeholder="z. B. 50" min="1" value="70">
     <button id="calculate-btn">Empfehlung berechnen</button>
     <div class="output" id="output"></div>
 </div>
 
 <script>
     const data = {
-        members: 500,
+        members: 1, // Base on a single plant
         averageYield: 50,
         products: [
-            { name: "Wurzel Complex", baseUsage: 67.2, sizes: [20, 10, 5, 2.5, 1, 0.5], prices: [166.00, 96.35, 59.45, 35.90, 17.15, 10.70] },
-            { name: "TNT Complex", baseUsage: 42, sizes: [20, 10, 5, 1, 0.5], prices: [54.15, 31.50, 19.35, 7.10, 5.30] },
-            { name: "SuperVit", baseUsage: 0.373, sizes: [0.5, 0.1, 0.05, 0.01], prices: [94.85, 22.60, 16.35, 6.65] },
-            { name: "Coco", baseUsage: 117.6, sizes: [20, 10, 5, 1], prices: [48.60, 27.70, 17.90, 6.35] },
-            { name: "PowerZyme", baseUsage: 67.2, sizes: [10, 5, 2.5, 1, 0.5], prices: [63.00, 35.45, 19.65, 8.45, 5.95] },
-            { name: "PK 13/14", baseUsage: 10.08, sizes: [20, 10, 5, 1, 0.5], prices: [91.00, 52.20, 29.85, 7.55, 5.50] },
-            { name: "Boost", baseUsage: 33.6, sizes: [10, 5, 2.5, 1, 0.5], prices: [50.50, 28.90, 15.55, 7.50, 5.15] }
+            { name: "Wurzel Complex", baseUsage: 0.006, sizes: [20, 10, 5, 2.5, 1, 0.5], prices: [166.00, 96.35, 59.45, 35.90, 17.15, 10.70] },
+            { name: "TNT Complex", baseUsage: 0.00375, sizes: [20, 10, 5, 1, 0.5], prices: [54.15, 31.50, 19.35, 7.10, 5.30] },
+            { name: "SuperVit", baseUsage: 0.000033, sizes: [0.5, 0.1, 0.05, 0.01], prices: [94.85, 22.60, 16.35, 6.65] },
+            { name: "Coco", baseUsage: 0.0105, sizes: [20, 10, 5, 1], prices: [48.60, 27.70, 17.90, 6.35] },
+            { name: "PowerZyme", baseUsage: 0.006, sizes: [10, 5, 2.5, 1, 0.5], prices: [63.00, 35.45, 19.65, 8.45, 5.95] },
+            { name: "PK 13/14", baseUsage: 0.0009, sizes: [20, 10, 5, 1, 0.5], prices: [91.00, 52.20, 29.85, 7.55, 5.50] },
+            { name: "Boost", baseUsage: 0.003, sizes: [10, 5, 2.5, 1, 0.5], prices: [50.50, 28.90, 15.55, 7.50, 5.15] }
         ],
         perPlantProducts: [
             { name: "Growbag", price: 19.99 },
@@ -180,12 +186,12 @@ th, td {
         return optimized;
     }
 
-    function calculateRecommendations(members) {
-        const ratio = members / data.members;
-        const perPlantCount = Math.ceil(members * (1500 / data.members));
+    function calculateRecommendations(members, yieldPerPlant) {
+        const plantsPerMember = 1500 / yieldPerPlant;
+        const totalPlants = Math.ceil(members * plantsPerMember);
         const recommendations = data.products.map(product => {
-            const precision = product.name === "SuperVit" ? 4 : 2;
-            const totalUsage = parseFloat((product.baseUsage * ratio).toFixed(precision));
+            const precision = product.name === "SuperVit" ? 5 : 3;
+            const totalUsage = parseFloat((product.baseUsage * totalPlants).toFixed(precision));
             let result = [];
             let remainder = totalUsage;
 
@@ -239,11 +245,12 @@ th, td {
         });
 
         data.perPlantProducts.forEach(product => {
-            const totalCost = perPlantCount * product.price;
+            const totalUnits = Math.ceil(members * (150 / yieldPerPlant)); // Adjust based on yield
+            const totalCost = totalUnits * product.price;
             recommendations.push({
                 name: product.name,
-                totalUsage: `${perPlantCount} Stück`,
-                combination: [{ size: 1, price: product.price, units: perPlantCount }],
+                totalUsage: `${totalUnits} Stück`,
+                combination: [{ size: 1, price: product.price, units: totalUnits }],
                 totalCost
             });
         });
@@ -251,7 +258,7 @@ th, td {
         return recommendations;
     }
 
-    function calculateSubscriptionOptions(totalCost, plants) {
+    function calculateSubscriptionOptions(totalCost, plants, yieldPerPlant) {
         const options = [
             { weeks: 10, discount: 0.02, months: 2.5 },
             { weeks: 20, discount: 0.07, months: 5 },
@@ -268,7 +275,7 @@ th, td {
                 discountAmount,
                 monthlyCost: discountedPrice / option.months,
                 costPerPlant: discountedPrice / plants,
-                costPerGram: discountedPrice / (data.averageYield * plants)
+                costPerGram: discountedPrice / (yieldPerPlant * plants)
             };
         });
     }
@@ -368,7 +375,6 @@ th, td {
             <button id="send-recommendation" class="send-button">Anfrage senden</button>
         </div>`;
 
-        html += `<p class="footnote">* Durchschnittlicher Ertrag pro Pflanze: ${data.averageYield.toFixed(2)} Gramm.</p>`;
         html += `<p class="footnote">* 10 Wochen entsprechen einem Grow-Zyklus.</p>`;
         html += `<p class="footnote">* Nettopreise, zzgl. MwSt.</p>`;
         output.innerHTML = html;
@@ -376,15 +382,16 @@ th, td {
 
     document.getElementById("calculate-btn").addEventListener("click", () => {
         const members = parseInt(document.getElementById("members").value, 10);
-        if (isNaN(members) || members < 1) {
-            document.getElementById("output").innerHTML = '<p class="error-message">Bitte geben Sie eine gültige Mitgliederanzahl ein.</p>';
+        const yieldPerPlant = parseFloat(document.getElementById("yield").value);
+        if (isNaN(members) || members < 1 || isNaN(yieldPerPlant) || yieldPerPlant < 1) {
+            document.getElementById("output").innerHTML = '<p class="error-message">Bitte geben Sie eine gültige Mitgliederanzahl und einen gültigen Ertrag pro Pflanze ein.</p>';
             return;
         }
 
-        const recommendations = calculateRecommendations(members);
+        const recommendations = calculateRecommendations(members, yieldPerPlant);
         const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
-        const plants = Math.ceil(members * (1120 / data.members));
-        const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants);
+        const plants = Math.ceil(members * (150 / yieldPerPlant)); // Corrected calculation
+        const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant);
 
         displayRecommendations(recommendations, subscriptionOptions, totalCost);
     });
