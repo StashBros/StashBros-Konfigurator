@@ -128,7 +128,7 @@ th, td {
 <script>
     const data = {
         members: 500,
-        averageYield: 66.96,
+        averageYield: 50,
         products: [
             { name: "Wurzel Complex", baseUsage: 67.2, sizes: [20, 10, 5, 2.5, 1, 0.5], prices: [166.00, 96.35, 59.45, 35.90, 17.15, 10.70] },
             { name: "TNT Complex", baseUsage: 42, sizes: [20, 10, 5, 1, 0.5], prices: [54.15, 31.50, 19.35, 7.10, 5.30] },
@@ -182,7 +182,7 @@ th, td {
 
     function calculateRecommendations(members) {
         const ratio = members / data.members;
-        const perPlantCount = Math.ceil(members * (1120 / data.members));
+        const perPlantCount = Math.ceil(members * (1500 / data.members));
         const recommendations = data.products.map(product => {
             const precision = product.name === "SuperVit" ? 4 : 2;
             const totalUsage = parseFloat((product.baseUsage * ratio).toFixed(precision));
