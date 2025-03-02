@@ -384,7 +384,7 @@ th, td {
         const members = parseInt(document.getElementById("members").value, 10);
         const yieldPerPlant = parseFloat(document.getElementById("yield").value);
         if (isNaN(members) || members < 1 || isNaN(yieldPerPlant) || yieldPerPlant < 1) {
-            document.getElementById("output").innerHTML = '<p class="error-message">Bitte gebe eine gültige Mitgliederanzahl und einen gültigen Ertrag pro Pflanze ein.</p>';
+            document.getElementById("output").innerHTML = '<p class="error-message">Bitte gib eine gültige Mitgliederanzahl und einen gültigen Ertrag pro Pflanze ein.</p>';
             return;
         }
 
