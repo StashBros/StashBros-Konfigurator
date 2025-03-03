@@ -127,6 +127,12 @@ th, td {
     <input type="number" id="members" placeholder="z. B. 500" min="1">
     <label for="yield">Ertrag pro Pflanze (Gramm):</label>
     <input type="number" id="yield" class="yield-input" placeholder="z. B. 50" min="1" value="70">
+    <label for="subscription-choice" style="margin-top: 20px; display: block;">Wähle eine Abo-Option:</label>
+    <select id="subscription-choice" style="width: 100%; padding: 10px; margin-bottom: 20px;">
+        <option value="10">10 Wochen</option>
+        <option value="20">20 Wochen</option>
+        <option value="40" selected>40 Wochen</option> <!-- Default selection -->
+    </select>
     <button id="calculate-btn">Empfehlung berechnen</button>
     <div class="output" id="output"></div>
 </div>
@@ -258,7 +264,7 @@ th, td {
         return recommendations;
     }
 
-    function calculateSubscriptionOptions(totalCost, plants, yieldPerPlant) {
+    function calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations) {
         const options = [
             { weeks: 10, discount: 0.02, months: 2.5 },
             { weeks: 20, discount: 0.07, months: 5 },
@@ -266,22 +272,51 @@ th, td {
         ];
 
         return options.map(option => {
-            const discountAmount = totalCost * option.discount;
-            const discountedPrice = totalCost - discountAmount;
+            const discountedTotalCost = recommendations.reduce((sum, rec) => {
+                const discountedCost = rec.combination.reduce((subSum, comb) => {
+                    return subSum + comb.units * getDiscountedPrice(comb.size, comb.price, option.weeks, rec.name);
+                }, 0);
+                return sum + discountedCost;
+            }, 0);
 
             return {
                 weeks: option.weeks,
-                discountedPrice,
-                discountAmount,
-                monthlyCost: discountedPrice / option.months,
-                costPerPlant: discountedPrice / plants,
-                costPerGram: discountedPrice / (yieldPerPlant * plants)
+                discountedPrice: discountedTotalCost,
+                discountAmount: totalCost - discountedTotalCost,
+                monthlyCost: discountedTotalCost / option.months,
+                costPerPlant: discountedTotalCost / plants,
+                costPerGram: discountedTotalCost / (yieldPerPlant * plants)
             };
         });
     }
 
+    function getDiscountedPrice(size, price, weeks, productName) {
+        let discount = 0;
+        if (productName === "Growbag" || productName === "Cube") {
+            if (weeks === 40) discount = 0.15;
+            else if (weeks === 20) discount = 0.10;
+            else if (weeks === 10) discount = 0.05;
+        } else {
+            if (weeks === 40) {
+                if (size <= 1) discount = 0.15;
+                else if (size <= 5) discount = 0.10;
+                else discount = 0.08;
+            } else if (weeks === 20) {
+                if (size <= 1) discount = 0.10;
+                else if (size <= 5) discount = 0.07;
+                else discount = 0.05;
+            } else if (weeks === 10) {
+                if (size <= 1) discount = 0.05;
+                else if (size <= 5) discount = 0.03;
+                else discount = 0.02;
+            }
+        }
+        return price * (1 - discount);
+    }
+
     function displayRecommendations(recommendations, subscriptionOptions, totalCost) {
         const output = document.getElementById("output");
+        const selectedWeeks = parseInt(document.getElementById("subscription-choice").value, 10); // Get selected subscription option
         let html = ""; // KORREKT: Variable wird initialisiert
         html += "<h3>Empfohlene Produkte</h3>";
         html += `<div class="table-wrapper">
@@ -292,7 +327,9 @@ th, td {
                         <th>Verbrauch 10-Wochen</th>
                         <th>Fassungsgrößen</th>
                         <th>Stückpreise (€)</th>
+                        <th>Rabattierte Stückpreise (€)</th>
                         <th>Gesamtkosten (€)</th>
+                        <th>Rabattierte Gesamtkosten (€)</th> <!-- New column -->
                     </tr>
                 </thead>
                 <tbody>`;
@@ -303,6 +340,11 @@ th, td {
             const priceDetails = rec.combination.map(comb => 
                 formatNumber(comb.price)
             ).join("<br>");
+            const discountedPriceDetails = rec.combination.map(comb => 
+                formatNumber(getDiscountedPrice(comb.size, comb.price, selectedWeeks, rec.name))
+            ).join("<br>");
+            const totalDiscountedCost = rec.combination.reduce((sum, comb) => 
+                sum + comb.units * getDiscountedPrice(comb.size, comb.price, selectedWeeks, rec.name), 0);
 
             html += `
                 <tr>
@@ -310,11 +352,19 @@ th, td {
                     <td>${rec.totalUsage}</td>
                     <td>${combinationDetails}</td>
                     <td>${priceDetails}</td>
+                    <td>${discountedPriceDetails}</td>
                     <td>${formatNumber(rec.totalCost)}</td>
+                    <td>${formatNumber(totalDiscountedCost)}</td> <!-- New column data -->
                 </tr>`;
         });
         html += `</tbody></table></div>`;
         html += `<h3>Gesamtkosten: ${formatNumber(totalCost)}</h3>`;
+        
+        const totalDiscountedCostSum = recommendations.reduce((sum, rec) => {
+            return sum + rec.combination.reduce((subSum, comb) => 
+                subSum + comb.units * getDiscountedPrice(comb.size, comb.price, selectedWeeks, rec.name), 0);
+        }, 0);
+        html += `<h3>Rabattierte Gesamtkosten: ${formatNumber(totalDiscountedCostSum)}</h3>`; // Renamed field
 
         html += "<h3>Abo-Optionen</h3>";
         html += `<div class="table-wrapper">
@@ -322,7 +372,6 @@ th, td {
                 <thead>
                     <tr>
                         <th>Wochen</th>
-                        <th>Rabatt</th>
                         <th>Rabattierter Gesamtpreis (€)</th>
                         <th>Rabattierte Gesamtkosten (€)</th>
                         <th>Monatliche Kosten (€)</th>
@@ -352,7 +401,6 @@ th, td {
             html += `
                 <tr>
                     <td>${sub.weeks} Wochen</td>
-                    <td>${Math.round(sub.discountAmount / totalCost * 100)}%</td>
                     <td>${formatNumber(sub.discountedPrice)}</td>
                     <td>${formatNumber(rabattierteGesamtkosten)}</td>
                     <td>${formatNumber(monatlicheKosten)}</td>
@@ -365,13 +413,6 @@ th, td {
         
         html += `
         <div>
-            <label for="subscription-choice" style="margin-top: 20px; display: block;">Wähle eine Abo-Option:</label>
-            <select id="subscription-choice" style="width: 100%; padding: 10px; margin-bottom: 20px;">
-                <option value="" selected>Bitte wählen...</option>
-                <option value="10">10 Wochen</option>
-                <option value="20">20 Wochen</option>
-                <option value="40">40 Wochen</option>
-            </select>
             <button id="send-recommendation" class="send-button">Anfrage senden</button>
         </div>`;
 
@@ -383,6 +424,8 @@ th, td {
     document.getElementById("calculate-btn").addEventListener("click", () => {
         const members = parseInt(document.getElementById("members").value, 10);
         const yieldPerPlant = parseFloat(document.getElementById("yield").value);
+        const selectedOption = document.getElementById("subscription-choice").value; // Get selected subscription option
+
         if (isNaN(members) || members < 1 || isNaN(yieldPerPlant) || yieldPerPlant < 1) {
             document.getElementById("output").innerHTML = '<p class="error-message">Bitte gib eine gültige Mitgliederanzahl und einen gültigen Ertrag pro Pflanze ein.</p>';
             return;
@@ -391,7 +434,25 @@ th, td {
         const recommendations = calculateRecommendations(members, yieldPerPlant);
         const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
         const plants = Math.ceil(members * (150 / yieldPerPlant)); // Corrected calculation
-        const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant);
+        const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations);
+
+        displayRecommendations(recommendations, subscriptionOptions, totalCost);
+        document.getElementById("subscription-choice").value = selectedOption; // Retain selected subscription option
+    });
+
+    document.getElementById("subscription-choice").addEventListener("change", () => {
+        const members = parseInt(document.getElementById("members").value, 10);
+        const yieldPerPlant = parseFloat(document.getElementById("yield").value);
+
+        if (isNaN(members) || members < 1 || isNaN(yieldPerPlant) || yieldPerPlant < 1) {
+            document.getElementById("output").innerHTML = '<p class="error-message">Bitte gib eine gültige Mitgliederanzahl und einen gültigen Ertrag pro Pflanze ein.</p>';
+            return;
+        }
+
+        const recommendations = calculateRecommendations(members, yieldPerPlant);
+        const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
+        const plants = Math.ceil(members * (150 / yieldPerPlant)); // Corrected calculation
+        const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations);
 
         displayRecommendations(recommendations, subscriptionOptions, totalCost);
     });
