@@ -503,6 +503,7 @@ th, td {
         if (event.target.id === "send-recommendation") {
             const selectedOption = document.getElementById("subscription-choice").value;
             const members = document.getElementById("members").value;
+            const yieldPerPlant = document.getElementById("yield").value;
 
             if (!selectedOption) {
                 alert("Bitte wähle eine Abo-Option aus, bevor du die Anfrage abschickst.");
@@ -510,14 +511,19 @@ th, td {
             }
 
             if (!members || parseInt(members, 10) < 1) {
-                alert("Bitte wähle eine Abo-Option aus, bevor du die Anfrage abschickst");
+                alert("Bitte gib eine gültige Mitgliederanzahl ein, bevor du die Anfrage abschickst.");
+                return;
+            }
+
+            if (!yieldPerPlant || parseFloat(yieldPerPlant) < 1) {
+                alert("Bitte gib einen gültigen Ertrag pro Pflanze ein, bevor du die Anfrage abschickst.");
                 return;
             }
 
             const emailBody = `
 Hallo StashBros-Team,
 
-ich habe die Empfehlung berechnen lassen und interessiere mich für die Abo-Option ${selectedOption} Wochen bei ${members} Mitgliedern.
+ich habe die Empfehlung berechnen lassen und interessiere mich für die Abo-Option ${selectedOption} Wochen bei ${members} Mitgliedern und einem Ertrag pro Pflanze von ${yieldPerPlant} Gramm.
 
 Ihr könnt mich gerne für weitere Rückfragen unter folgenden Kontaktdaten erreichen:
 
