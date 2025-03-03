@@ -418,6 +418,48 @@ th, td {
 
         html += `<p class="footnote">* 10 Wochen entsprechen einem Grow-Zyklus.</p>`;
         html += `<p class="footnote">* Nettopreise, zzgl. MwSt.</p>`;
+
+        // Add discount information table
+        html += `
+        <p class="footnote">* Rabattinformationen:</p>
+        <div class="table-wrapper" style="max-width: 400px;">
+            <table style="font-size: 0.8rem;">
+                <thead>
+                    <tr>
+                        <th>Produkt</th>
+                        <th>40 Wochen</th>
+                        <th>20 Wochen</th>
+                        <th>10 Wochen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Bis 1 L</td>
+                        <td>15%</td>
+                        <td>10%</td>
+                        <td>5%</td>
+                    </tr>
+                    <tr>
+                        <td>2,5 L und 5 L</td>
+                        <td>10%</td>
+                        <td>7%</td>
+                        <td>3%</td>
+                    </tr>
+                    <tr>
+                        <td>Ab 10 L</td>
+                        <td>8%</td>
+                        <td>5%</td>
+                        <td>2%</td>
+                    </tr>
+                    <tr>
+                        <td>Growbag und Cube</td>
+                        <td>15%</td>
+                        <td>10%</td>
+                        <td>5%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>`;
         output.innerHTML = html;
     }
 
