@@ -128,7 +128,7 @@ th, td {
     <label for="yield">Ertrag pro Pflanze (Gramm):</label>
     <input type="number" id="yield" class="yield-input" placeholder="z. B. 50" min="1" value="65">
     <label for="water-consumption">Wasserverbrauch pro Pflanze (L):</label>
-    <input type="number" id="water-consumption" placeholder="z. B. 116,2" min="1" value="116.2">
+    <input type="number" id="water-consumption" placeholder="z. B. 116,2" min="1" value="63">
     <label for="subscription-choice" style="margin-top: 20px; display: block;">Wähle eine Abo-Option:</label>
     <select id="subscription-choice" style="width: 100%; padding: 10px; margin-bottom: 20px;">
         <option value="10">10 Wochen</option>
@@ -469,7 +469,7 @@ th, td {
     document.getElementById("calculate-btn").addEventListener("click", () => {
         const members = parseInt(document.getElementById("members").value, 10);
         const yieldPerPlant = parseFloat(document.getElementById("yield").value) || data.averageYield;
-        const waterConsumption = parseFloat(document.getElementById("water-consumption").value) || 116.2;
+        const waterConsumption = parseFloat(document.getElementById("water-consumption").value) || 63;
         const selectedOption = document.getElementById("subscription-choice").value; // Get selected subscription option
 
         if (isNaN(members) || members < 1 || isNaN(yieldPerPlant) || yieldPerPlant < 1 || isNaN(waterConsumption) || waterConsumption < 1) {
@@ -489,7 +489,7 @@ th, td {
     document.getElementById("subscription-choice").addEventListener("change", () => {
         const members = parseInt(document.getElementById("members").value, 10);
         const yieldPerPlant = parseFloat(document.getElementById("yield").value) || data.averageYield;
-        const waterConsumption = parseFloat(document.getElementById("water-consumption").value) || 116.2;
+        const waterConsumption = parseFloat(document.getElementById("water-consumption").value) || 63;
 
         if (isNaN(members) || members < 1 || isNaN(yieldPerPlant) || yieldPerPlant < 1 || isNaN(waterConsumption) || waterConsumption < 1) {
             document.getElementById("output").innerHTML = '<p class="error-message">Bitte gib eine gültige Mitgliederanzahl, einen gültigen Ertrag pro Pflanze und einen gültigen Wasserverbrauch ein.</p>';
