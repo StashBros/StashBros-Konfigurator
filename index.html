@@ -148,7 +148,7 @@ th, td {
             { name: "TNT Complex", baseUsage: 0.02625, sizes: [20, 10, 5, 1, 0.5], prices: [54.15, 31.50, 19.35, 7.10, 5.30] },
             { name: "SuperVit", baseUsage: 0.00095, sizes: [0.5, 0.1, 0.05, 0.01], prices: [94.85, 22.60, 16.35, 6.65] },
             { name: "Coco", baseUsage: 0.28645, sizes: [20, 10, 5, 1], prices: [48.60, 27.70, 17.90, 6.35] },
-            { name: "PowerZyme", baseUsage: 0.03538, sizes: [10, 5, 2.5, 1, 0.5], prices: [63.00, 35.45, 19.65, 8.45, 5.95] },
+            { name: "PowerZyme", baseUsage: 0.035838, sizes: [10, 5, 2.5, 1, 0.5], prices: [63.00, 35.45, 19.65, 8.45, 5.95] },
             { name: "PK 13/14", baseUsage: 0.03248, sizes: [20, 10, 5, 1, 0.5], prices: [91.00, 52.20, 29.85, 7.55, 5.50] },
             { name: "Boost", baseUsage: 0.0886, sizes: [10, 5, 2.5, 1, 0.5], prices: [50.50, 28.90, 15.55, 7.50, 5.15] }
         ],
@@ -199,7 +199,7 @@ th, td {
         const totalPlants = Math.ceil(members * plantsPerMember);
         const recommendations = data.products.map(product => {
             const precision = product.name === "SuperVit" ? 5 : 3;
-            const totalUsage = parseFloat((product.baseUsage * totalPlants * (waterConsumption / 116.2)).toFixed(precision));
+            const totalUsage = parseFloat((product.baseUsage * totalPlants * (waterConsumption / 63)).toFixed(precision));
             let result = [];
             let remainder = totalUsage;
 
