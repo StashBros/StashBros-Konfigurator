@@ -364,7 +364,7 @@ th, td {
             return sum + rec.combination.reduce((subSum, comb) => 
                 subSum + comb.units * getDiscountedPrice(comb.size, comb.price, selectedWeeks, rec.name), 0);
         }, 0);
-        html += `<h3>Rabattierte Gesamtkosten: ${formatNumber(totalDiscountedCostSum)}/h3>`; // Renamed field
+        html += `<h3>Rabattierte Gesamtkosten: ${formatNumber(totalDiscountedCostSum)}</h3>`; // Corrected field
 
         html += "<h3>Abo-Optionen</h3>";
         html += `<div class="table-wrapper">
