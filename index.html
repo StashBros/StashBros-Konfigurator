@@ -127,6 +127,8 @@ th, td {
     <input type="number" id="members" placeholder="z. B. 500" min="1">
     <label for="yield">Ertrag pro Pflanze (Gramm):</label>
     <input type="number" id="yield" class="yield-input" placeholder="z. B. 50" min="1" value="65">
+    <label for="water-consumption">Wasserverbrauch pro Pflanze (L):</label>
+    <input type="number" id="water-consumption" placeholder="z. B. 116,2" min="1" value="63">
     <label for="subscription-choice" style="margin-top: 20px; display: block;">Wähle eine Abo-Option:</label>
     <select id="subscription-choice" style="width: 100%; padding: 10px; margin-bottom: 20px;">
         <option value="10">10 Wochen</option>
@@ -146,7 +148,7 @@ th, td {
             { name: "TNT Complex", baseUsage: 0.02625, sizes: [20, 10, 5, 1, 0.5], prices: [54.15, 31.50, 19.35, 7.10, 5.30] },
             { name: "SuperVit", baseUsage: 0.00095, sizes: [0.5, 0.1, 0.05, 0.01], prices: [94.85, 22.60, 16.35, 6.65] },
             { name: "Coco", baseUsage: 0.28645, sizes: [20, 10, 5, 1], prices: [48.60, 27.70, 17.90, 6.35] },
-            { name: "PowerZyme", baseUsage: 0.03538, sizes: [10, 5, 2.5, 1, 0.5], prices: [63.00, 35.45, 19.65, 8.45, 5.95] },
+            { name: "PowerZyme", baseUsage: 0.035838, sizes: [10, 5, 2.5, 1, 0.5], prices: [63.00, 35.45, 19.65, 8.45, 5.95] },
             { name: "PK 13/14", baseUsage: 0.03248, sizes: [20, 10, 5, 1, 0.5], prices: [91.00, 52.20, 29.85, 7.55, 5.50] },
             { name: "Boost", baseUsage: 0.0886, sizes: [10, 5, 2.5, 1, 0.5], prices: [50.50, 28.90, 15.55, 7.50, 5.15] }
         ],
@@ -192,12 +194,12 @@ th, td {
         return optimized;
     }
 
-    function calculateRecommendations(members, yieldPerPlant) {
-        const plantsPerMember = 1500 / yieldPerPlant;
-        const totalPlants = Math.ceil(members * plantsPerMember);
+    function calculateRecommendations(members, yieldPerPlant, waterConsumption) {
+        const totalYieldNeeded = members * 150; // 150 grams per member
+        const totalPlants = Math.ceil(totalYieldNeeded / yieldPerPlant); // Calculate total plants needed
         const recommendations = data.products.map(product => {
-            const precision = product.name === "SuperVit" ? 5 : 3;
-            const totalUsage = parseFloat((product.baseUsage * totalPlants).toFixed(precision));
+            const precision = product.name === "SuperVit" ? 5 : 5;
+            const totalUsage = parseFloat((product.baseUsage * totalPlants).toFixed(precision)); // Corrected calculation
             let result = [];
             let remainder = totalUsage;
 
@@ -251,7 +253,7 @@ th, td {
         });
 
         data.perPlantProducts.forEach(product => {
-            const totalUnits = Math.ceil(members * (150 / yieldPerPlant)); // Adjust based on yield
+            const totalUnits = Math.ceil(totalPlants); // Adjust based on total plants
             const totalCost = totalUnits * product.price;
             recommendations.push({
                 name: product.name,
@@ -417,8 +419,8 @@ th, td {
         </div>`;
 
         html += `<p class="footnote">* 10 Wochen entsprechen einem Grow-Zyklus.</p>`;
-        html += `<p class="footnote">* Pro Pflanze gesamt ∅ Verbrauch von 116,2 L Gießwasser.</p>`;
         html += `<p class="footnote">* Nettopreise, zzgl. MwSt.</p>`;
+        html += `<p class="footnote">* Pro Pflanze ∅ Verbrauch von 116,2 L Gießwasser pro Woche.</p>`;
 
         // Add discount information table
         html += `
@@ -467,14 +469,15 @@ th, td {
     document.getElementById("calculate-btn").addEventListener("click", () => {
         const members = parseInt(document.getElementById("members").value, 10);
         const yieldPerPlant = parseFloat(document.getElementById("yield").value) || data.averageYield;
+        const waterConsumption = parseFloat(document.getElementById("water-consumption").value) || 63;
         const selectedOption = document.getElementById("subscription-choice").value; // Get selected subscription option
 
-        if (isNaN(members) || members < 1 || isNaN(yieldPerPlant) || yieldPerPlant < 1) {
-            document.getElementById("output").innerHTML = '<p class="error-message">Bitte gib eine gültige Mitgliederanzahl und einen gültigen Ertrag pro Pflanze ein.</p>';
+        if (isNaN(members) || members < 1 || isNaN(yieldPerPlant) || yieldPerPlant < 1 || isNaN(waterConsumption) || waterConsumption < 1) {
+            document.getElementById("output").innerHTML = '<p class="error-message">Bitte gib eine gültige Mitgliederanzahl, einen gültigen Ertrag pro Pflanze und einen gültigen Wasserverbrauch ein.</p>';
             return;
         }
 
-        const recommendations = calculateRecommendations(members, yieldPerPlant);
+        const recommendations = calculateRecommendations(members, yieldPerPlant, waterConsumption);
         const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
         const plants = Math.ceil(members * (150 / yieldPerPlant)); // Corrected calculation
         const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations);
@@ -486,13 +489,50 @@ th, td {
     document.getElementById("subscription-choice").addEventListener("change", () => {
         const members = parseInt(document.getElementById("members").value, 10);
         const yieldPerPlant = parseFloat(document.getElementById("yield").value) || data.averageYield;
+        const waterConsumption = parseFloat(document.getElementById("water-consumption").value) || 63;
 
-        if (isNaN(members) || members < 1 || isNaN(yieldPerPlant) || yieldPerPlant < 1) {
-            document.getElementById("output").innerHTML = '<p class="error-message">Bitte gib eine gültige Mitgliederanzahl und einen gültigen Ertrag pro Pflanze ein.</p>';
+        if (isNaN(members) || members < 1 || isNaN(yieldPerPlant) || yieldPerPlant < 1 || isNaN(waterConsumption) || waterConsumption < 1) {
+            document.getElementById("output").innerHTML = '<p class="error-message">Bitte gib eine gültige Mitgliederanzahl, einen gültigen Ertrag pro Pflanze und einen gültigen Wasserverbrauch ein.</p>';
             return;
         }
 
-        const recommendations = calculateRecommendations(members, yieldPerPlant);
+        const recommendations = calculateRecommendations(members, yieldPerPlant, waterConsumption);
+        const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
+        const plants = Math.ceil(members * (150 / yieldPerPlant)); // Corrected calculation
+        const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations);
+
+        displayRecommendations(recommendations, subscriptionOptions, totalCost);
+    });
+
+    document.getElementById("yield").addEventListener("input", () => {
+        const members = parseInt(document.getElementById("members").value, 10);
+        const yieldPerPlant = parseFloat(document.getElementById("yield").value) || data.averageYield;
+        const waterConsumption = parseFloat(document.getElementById("water-consumption").value) || 63;
+
+        if (isNaN(members) || members < 1 || isNaN(yieldPerPlant) || yieldPerPlant < 1 || isNaN(waterConsumption) || waterConsumption < 1) {
+            document.getElementById("output").innerHTML = '<p class="error-message">Bitte gib eine gültige Mitgliederanzahl, einen gültigen Ertrag pro Pflanze und einen gültigen Wasserverbrauch ein.</p>';
+            return;
+        }
+
+        const recommendations = calculateRecommendations(members, yieldPerPlant, waterConsumption);
+        const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
+        const plants = Math.ceil(members * (150 / yieldPerPlant)); // Corrected calculation
+        const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations);
+
+        displayRecommendations(recommendations, subscriptionOptions, totalCost);
+    });
+
+    document.getElementById("water-consumption").addEventListener("input", () => {
+        const members = parseInt(document.getElementById("members").value, 10);
+        const yieldPerPlant = parseFloat(document.getElementById("yield").value) || data.averageYield;
+        const waterConsumption = parseFloat(document.getElementById("water-consumption").value) || 63;
+
+        if (isNaN(members) || members < 1 || isNaN(yieldPerPlant) || yieldPerPlant < 1 || isNaN(waterConsumption) || waterConsumption < 1) {
+            document.getElementById("output").innerHTML = '<p class="error-message">Bitte gib eine gültige Mitgliederanzahl, einen gültigen Ertrag pro Pflanze und einen gültigen Wasserverbrauch ein.</p>';
+            return;
+        }
+
+        const recommendations = calculateRecommendations(members, yieldPerPlant, waterConsumption);
         const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
         const plants = Math.ceil(members * (150 / yieldPerPlant)); // Corrected calculation
         const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations);
