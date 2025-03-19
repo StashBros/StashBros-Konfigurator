@@ -389,6 +389,7 @@ th, td {
     function displayRecommendations(recommendations, subscriptionOptions, totalCost) {
         const output = document.getElementById("output");
         const selectedWeeks = parseInt(document.getElementById("subscription-choice").value, 10); // Get selected subscription option
+        const selectedOption = subscriptionOptions.find(option => option.weeks === selectedWeeks); // Find the selected subscription option
         const substrate = document.getElementById("substrate-choice").value; // Get selected substrate
         let html = ""; // KORREKT: Variable wird initialisiert
         html += "<h3>Empfohlene Produkte</h3>";
@@ -402,7 +403,7 @@ th, td {
                         <th>Stückpreise (€)</th>
                         <th>Rabattierte Stückpreise (€)</th>
                         <th>Gesamtkosten (€)</th>
-                        <th>Rabattierte Gesamtkosten (€)</th> <!-- New column -->
+                        <th>Monatliche Kosten (€)</th> <!-- Changed column -->
                     </tr>
                 </thead>
                 <tbody>`;
@@ -418,6 +419,7 @@ th, td {
             ).join("<br>");
             const totalDiscountedCost = rec.combination.reduce((sum, comb) => 
                 sum + comb.units * getDiscountedPrice(comb.size, comb.price, selectedWeeks, rec.name), 0);
+            const monthlyCost = totalDiscountedCost / 2.5; // Calculate monthly cost based on rabattierte Gesamtkosten divided by 2.5
 
             html += `
                 <tr>
@@ -427,17 +429,20 @@ th, td {
                     <td>${priceDetails}</td>
                     <td>${discountedPriceDetails}</td>
                     <td>${formatNumber(rec.totalCost)}</td>
-                    <td>${formatNumber(totalDiscountedCost)}</td> <!-- New column data -->
+                    <td><strong>${formatNumber(monthlyCost)}</strong></td> <!-- Changed column data -->
                 </tr>`;
         });
         html += `</tbody></table></div>`;
-        html += `<h3>Gesamtkosten: ${formatNumber(totalCost)}</h3>`;
         
         const totalDiscountedCostSum = recommendations.reduce((sum, rec) => {
             return sum + rec.combination.reduce((subSum, comb) => 
                 subSum + comb.units * getDiscountedPrice(comb.size, comb.price, selectedWeeks, rec.name), 0);
         }, 0);
-        html += `<h3>Rabattierte Gesamtkosten: ${formatNumber(totalDiscountedCostSum)}</h3>`; // Corrected field
+        const totalMonthlyCost = totalDiscountedCostSum / 2.5; // Calculate total monthly cost based on rabattierte Gesamtkosten divided by 2.5
+
+        html += `<h3>Monatliche Kosten: <strong>${formatNumber(totalMonthlyCost)}</strong></h3>`; // Changed field
+        html += `<p style="font-size: 0.9em;">Gesamtkosten: ${formatNumber(totalCost)}</p>`; // Additional cost information
+        html += `<p style="font-size: 0.9em;">Rabattierte Gesamtkosten: ${formatNumber(totalDiscountedCostSum)}</p>`; // Additional cost information
 
         html += "<h3>Abo-Optionen</h3>";
         html += `<div class="table-wrapper">
@@ -647,6 +652,7 @@ th, td {
         const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations);
 
         displayRecommendations(recommendations, subscriptionOptions, totalCost);
+        updateFootnote(); // Update footnote after recommendations are displayed
     });
 
     document.addEventListener("DOMContentLoaded", () => {
