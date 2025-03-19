@@ -129,6 +129,11 @@ th, td {
     <input type="number" id="yield" class="yield-input" placeholder="z. B. 50" min="1" value="65">
     <label for="water-consumption">Wasserverbrauch pro Pflanze (L):</label>
     <input type="number" id="water-consumption" placeholder="z. B. 116,2" min="1" value="63">
+    <label for="substrate-choice" style="margin-top: 20px; display: block;">Wähle ein Substrat:</label>
+    <select id="substrate-choice" style="width: 100%; padding: 10px; margin-bottom: 20px;">
+        <option value="coco" selected>Coco</option>
+        <option value="soil">Erde</option>
+    </select>
     <label for="subscription-choice" style="margin-top: 20px; display: block;">Wähle eine Abo-Option:</label>
     <select id="subscription-choice" style="width: 100%; padding: 10px; margin-bottom: 20px;">
         <option value="10">10 Wochen</option>
@@ -143,19 +148,40 @@ th, td {
     const data = {
         members: 1, // Base on a single plant
         averageYield: 65,
-        products: [
-            { name: "Wurzel Complex", baseUsage: 0.048, sizes: [20, 10, 5, 2.5, 1, 0.5], prices: [166.00, 96.35, 59.45, 35.90, 17.15, 10.70] },
-            { name: "TNT Complex", baseUsage: 0.02625, sizes: [20, 10, 5, 1, 0.5], prices: [54.15, 31.50, 19.35, 7.10, 5.30] },
-            { name: "SuperVit", baseUsage: 0.00095, sizes: [0.5, 0.1, 0.05, 0.01], prices: [94.85, 22.60, 16.35, 6.65] },
-            { name: "Coco", baseUsage: 0.28645, sizes: [20, 10, 5, 1], prices: [48.60, 27.70, 17.90, 6.35] },
-            { name: "PowerZyme", baseUsage: 0.035838, sizes: [10, 5, 2.5, 1, 0.5], prices: [63.00, 35.45, 19.65, 8.45, 5.95] },
-            { name: "PK 13/14", baseUsage: 0.03248, sizes: [20, 10, 5, 1, 0.5], prices: [91.00, 52.20, 29.85, 7.55, 5.50] },
-            { name: "Boost", baseUsage: 0.0886, sizes: [10, 5, 2.5, 1, 0.5], prices: [50.50, 28.90, 15.55, 7.50, 5.15] }
-        ],
-        perPlantProducts: [
-            { name: "Growbag", price: 14.99 },
-            { name: "Cube", price: 1.99 }
-        ]
+        waterConsumption: {
+            coco: 63,
+            soil: 35.76
+        },
+        products: {
+            coco: [
+                { name: "Wurzel Complex", baseUsage: 0.048, sizes: [20, 10, 5, 2.5, 1, 0.5], prices: [166.00, 96.35, 59.45, 35.90, 17.15, 10.70] },
+                { name: "TNT Complex", baseUsage: 0.02625, sizes: [20, 10, 5, 1, 0.5], prices: [54.15, 31.50, 19.35, 7.10, 5.30] },
+                { name: "SuperVit", baseUsage: 0.00095, sizes: [0.5, 0.1, 0.05, 0.01], prices: [94.85, 22.60, 16.35, 6.65] },
+                { name: "Coco", baseUsage: 0.28645, sizes: [20, 10, 5, 1], prices: [48.60, 27.70, 17.90, 6.35] },
+                { name: "PowerZyme", baseUsage: 0.035838, sizes: [10, 5, 2.5, 1, 0.5], prices: [63.00, 35.45, 19.65, 8.45, 5.95] },
+                { name: "PK 13/14", baseUsage: 0.03248, sizes: [20, 10, 5, 1, 0.5], prices: [91.00, 52.20, 29.85, 7.55, 5.50] },
+                { name: "Boost", baseUsage: 0.0886, sizes: [10, 5, 2.5, 1, 0.5], prices: [50.50, 28.90, 15.55, 7.50, 5.15] }
+            ],
+            soil: [
+                { name: "Wurzel Complex", baseUsage: 0.0315, sizes: [20, 10, 5, 2.5, 1, 0.5], prices: [166.00, 96.35, 59.45, 35.90, 17.15, 10.70] },
+                { name: "TNT Complex", baseUsage: 0.0164, sizes: [20, 10, 5, 1, 0.5], prices: [54.15, 31.50, 19.35, 7.10, 5.30] },
+                { name: "SuperVit", baseUsage: 0.00225, sizes: [0.5, 0.1, 0.05, 0.01], prices: [94.85, 22.60, 16.35, 6.65] },
+                { name: "Blüh Complex", baseUsage: 0.165, sizes: [20, 10, 5, 1], prices: [48.60, 27.70, 17.90, 6.35] },
+                { name: "PowerZyme", baseUsage: 0.0409, sizes: [10, 5, 2.5, 1, 0.5], prices: [63.00, 35.45, 19.65, 8.45, 5.95] },
+                { name: "Phosphor Plus", baseUsage: 0.054, sizes: [20, 10, 5, 1, 0.5], prices: [91.00, 52.20, 29.85, 7.55, 5.50] },
+                { name: "Boost", baseUsage: 0.0493, sizes: [10, 5, 2.5, 1, 0.5], prices: [50.50, 28.90, 15.55, 7.50, 5.15] }
+            ]
+        },
+        perPlantProducts: {
+            coco: [
+                { name: "Growbag", price: 14.99 },
+                { name: "Cube", price: 1.99 }
+            ],
+            soil: [
+                { name: "Soil Bag 50L", size: 50, price: 12.99 },
+                { name: "Soil Bag 20L", size: 20, price: 5.99 }
+            ]
+        }
     };
 
     function formatNumber(value) {
@@ -194,12 +220,18 @@ th, td {
         return optimized;
     }
 
-    function calculateRecommendations(members, yieldPerPlant, waterConsumption) {
+    function calculateRecommendations(members, yieldPerPlant, waterConsumption, substrate) {
+        if (substrate === "soil") {
+            yieldPerPlant *= 0.8; // Reduce yield by 20% for soil
+        }
+
         const totalYieldNeeded = members * 150; // 150 grams per member
         const totalPlants = Math.ceil(totalYieldNeeded / yieldPerPlant); // Calculate total plants needed
-        const recommendations = data.products.map(product => {
+        const waterConsumptionFactor = waterConsumption / data.waterConsumption[substrate]; // Calculate water consumption factor
+
+        const recommendations = data.products[substrate].map(product => {
             const precision = product.name === "SuperVit" ? 5 : 5;
-            const totalUsage = parseFloat((product.baseUsage * totalPlants).toFixed(precision)); // Corrected calculation
+            const totalUsage = parseFloat((product.baseUsage * totalPlants * waterConsumptionFactor).toFixed(precision)); // Adjusted calculation
             let result = [];
             let remainder = totalUsage;
 
@@ -252,16 +284,54 @@ th, td {
             return { name: product.name, totalUsage: `${totalUsage} L`, combination: result, totalCost };
         });
 
-        data.perPlantProducts.forEach(product => {
-            const totalUnits = Math.ceil(totalPlants); // Adjust based on total plants
-            const totalCost = totalUnits * product.price;
+        if (substrate === "soil") {
+            const totalSoilNeeded = totalPlants * 10; // 10 L per plant
+            const soilBags = [];
+            let remainingSoil = totalSoilNeeded;
+
+            const soilSizes = data.perPlantProducts.soil.map(product => product.size);
+            const soilPrices = data.perPlantProducts.soil.map(product => product.price);
+
+            for (const size of soilSizes) {
+                if (remainingSoil >= size) {
+                    const units = Math.floor(remainingSoil / size);
+                    soilBags.push({
+                        size,
+                        units,
+                        price: soilPrices[soilSizes.indexOf(size)]
+                    });
+                    remainingSoil %= size;
+                }
+            }
+
+            if (remainingSoil > 0) {
+                const smallestSize = soilSizes[soilSizes.length - 1];
+                soilBags.push({
+                    size: smallestSize,
+                    units: Math.ceil(remainingSoil / smallestSize),
+                    price: soilPrices[soilSizes.indexOf(smallestSize)]
+                });
+            }
+
+            const totalSoilCost = soilBags.reduce((sum, item) => sum + item.units * item.price, 0);
             recommendations.push({
-                name: product.name,
-                totalUsage: `${totalUnits} Stück`,
-                combination: [{ size: 1, price: product.price, units: totalUnits }],
-                totalCost
+                name: "Soil Bags",
+                totalUsage: `${totalSoilNeeded} L`,
+                combination: soilBags,
+                totalCost: totalSoilCost
             });
-        });
+        } else {
+            data.perPlantProducts.coco.forEach(product => {
+                const totalUnits = Math.ceil(totalPlants); // Adjust based on total plants
+                const totalCost = totalUnits * product.price;
+                recommendations.push({
+                    name: product.name,
+                    totalUsage: `${totalUnits} Stück`,
+                    combination: [{ size: 1, price: product.price, units: totalUnits }],
+                    totalCost
+                });
+            });
+        }
 
         return recommendations;
     }
@@ -294,7 +364,7 @@ th, td {
 
     function getDiscountedPrice(size, price, weeks, productName) {
         let discount = 0;
-        if (productName === "Growbag" || productName === "Cube") {
+        if (productName === "Growbag" || productName === "Cube" || productName.includes("Soil Bag")) {
             if (weeks === 40) discount = 0.15;
             else if (weeks === 20) discount = 0.10;
             else if (weeks === 10) discount = 0.05;
@@ -319,6 +389,7 @@ th, td {
     function displayRecommendations(recommendations, subscriptionOptions, totalCost) {
         const output = document.getElementById("output");
         const selectedWeeks = parseInt(document.getElementById("subscription-choice").value, 10); // Get selected subscription option
+        const substrate = document.getElementById("substrate-choice").value; // Get selected substrate
         let html = ""; // KORREKT: Variable wird initialisiert
         html += "<h3>Empfohlene Produkte</h3>";
         html += `<div class="table-wrapper">
@@ -337,7 +408,7 @@ th, td {
                 <tbody>`;
         recommendations.forEach(rec => {
             const combinationDetails = rec.combination.map(comb => 
-                `${comb.units} x ${comb.size}${rec.name === "Growbag" || rec.name === "Cube" ? " Stück" : " L"}`
+                `${comb.units} x ${comb.size}${rec.name === "Growbag" || rec.name === "Cube" || rec.name.includes("Soil Bag") ? " Stück" : " L"}`
             ).join("<br>");
             const priceDetails = rec.combination.map(comb => 
                 formatNumber(comb.price)
@@ -420,7 +491,7 @@ th, td {
 
         html += `<p class="footnote">* 10 Wochen entsprechen einem Grow-Zyklus.</p>`;
         html += `<p class="footnote">* Nettopreise, zzgl. MwSt.</p>`;
-        html += `<p class="footnote">* Pro Pflanze gesamt ∅ Verbrauch von 63 L Gießwasser.</p>`;
+        html += `<p class="footnote" id="water-consumption-footnote">* Pro Pflanze gesamt ∅ Verbrauch von 63 L Gießwasser.</p>`;
 
         // Add discount information table
         html += `
@@ -454,8 +525,8 @@ th, td {
                         <td>5%</td>
                         <td>2%</td>
                     </tr>
-                    <tr>
-                        <td>Growbag und Cube</td>
+                    <tr id="discount-product-row">
+                        <td>${substrate === "soil" ? "Soil Bags" : "Growbag und Cube"}</td>
                         <td>15%</td>
                         <td>10%</td>
                         <td>5%</td>
@@ -466,18 +537,33 @@ th, td {
         output.innerHTML = html;
     }
 
+    function updateFootnote() {
+        const substrate = document.getElementById("substrate-choice").value;
+        const footnote = document.getElementById("water-consumption-footnote");
+        const consumption = substrate === "soil" ? "35,76 L" : "63 L";
+        footnote.innerText = `* Pro Pflanze gesamt ∅ Verbrauch von ${consumption} Gießwasser.`;
+    }
+
+    function updateWaterConsumption() {
+        const substrate = document.getElementById("substrate-choice").value;
+        const waterConsumptionInput = document.getElementById("water-consumption");
+        waterConsumptionInput.value = data.waterConsumption[substrate];
+        updateFootnote();
+    }
+
     document.getElementById("calculate-btn").addEventListener("click", () => {
         const members = parseInt(document.getElementById("members").value, 10);
         const yieldPerPlant = parseFloat(document.getElementById("yield").value) || data.averageYield;
-        const waterConsumption = parseFloat(document.getElementById("water-consumption").value) || 63;
+        const waterConsumption = parseFloat(document.getElementById("water-consumption").value);
         const selectedOption = document.getElementById("subscription-choice").value; // Get selected subscription option
+        const substrate = document.getElementById("substrate-choice").value; // Get selected substrate
 
         if (isNaN(members) || members < 1 || isNaN(yieldPerPlant) || yieldPerPlant < 1 || isNaN(waterConsumption) || waterConsumption < 1) {
             document.getElementById("output").innerHTML = '<p class="error-message">Bitte gib eine gültige Mitgliederanzahl, einen gültigen Ertrag pro Pflanze und einen gültigen Wasserverbrauch ein.</p>';
             return;
         }
 
-        const recommendations = calculateRecommendations(members, yieldPerPlant, waterConsumption);
+        const recommendations = calculateRecommendations(members, yieldPerPlant, waterConsumption, substrate);
         const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
         const plants = Math.ceil(members * (150 / yieldPerPlant)); // Corrected calculation
         const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations);
@@ -496,7 +582,8 @@ th, td {
             return;
         }
 
-        const recommendations = calculateRecommendations(members, yieldPerPlant, waterConsumption);
+        const substrate = document.getElementById("substrate-choice").value; // Get selected substrate
+        const recommendations = calculateRecommendations(members, yieldPerPlant, waterConsumption, substrate);
         const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
         const plants = Math.ceil(members * (150 / yieldPerPlant)); // Corrected calculation
         const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations);
@@ -514,7 +601,8 @@ th, td {
             return;
         }
 
-        const recommendations = calculateRecommendations(members, yieldPerPlant, waterConsumption);
+        const substrate = document.getElementById("substrate-choice").value; // Get selected substrate
+        const recommendations = calculateRecommendations(members, yieldPerPlant, waterConsumption, substrate);
         const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
         const plants = Math.ceil(members * (150 / yieldPerPlant)); // Corrected calculation
         const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations);
@@ -532,12 +620,37 @@ th, td {
             return;
         }
 
-        const recommendations = calculateRecommendations(members, yieldPerPlant, waterConsumption);
+        const substrate = document.getElementById("substrate-choice").value; // Get selected substrate
+        const recommendations = calculateRecommendations(members, yieldPerPlant, waterConsumption, substrate);
         const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
         const plants = Math.ceil(members * (150 / yieldPerPlant)); // Corrected calculation
         const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations);
 
         displayRecommendations(recommendations, subscriptionOptions, totalCost);
+    });
+
+    document.getElementById("substrate-choice").addEventListener("change", () => {
+        updateWaterConsumption();
+        const members = parseInt(document.getElementById("members").value, 10);
+        const yieldPerPlant = parseFloat(document.getElementById("yield").value) || data.averageYield;
+        const waterConsumption = parseFloat(document.getElementById("water-consumption").value) || 63;
+
+        if (isNaN(members) || members < 1 || isNaN(yieldPerPlant) || yieldPerPlant < 1 || isNaN(waterConsumption) || waterConsumption < 1) {
+            document.getElementById("output").innerHTML = '<p class="error-message">Bitte gib eine gültige Mitgliederanzahl, einen gültigen Ertrag pro Pflanze und einen gültigen Wasserverbrauch ein.</p>';
+            return;
+        }
+
+        const substrate = document.getElementById("substrate-choice").value; // Get selected substrate
+        const recommendations = calculateRecommendations(members, yieldPerPlant, waterConsumption, substrate);
+        const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
+        const plants = Math.ceil(members * (150 / yieldPerPlant)); // Corrected calculation
+        const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations);
+
+        displayRecommendations(recommendations, subscriptionOptions, totalCost);
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+        updateWaterConsumption();
     });
 
     document.addEventListener("click", (event) => {
@@ -582,6 +695,9 @@ Mit freundlichen Grüßen,
             window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
         }
     });
+
+    // Initialize water consumption based on default substrate
+    updateWaterConsumption();
 </script>
 </body>
 </html>
