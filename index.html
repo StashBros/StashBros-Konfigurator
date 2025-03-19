@@ -441,8 +441,8 @@ th, td {
         const totalMonthlyCost = totalDiscountedCostSum / 2.5; // Calculate total monthly cost based on rabattierte Gesamtkosten divided by 2.5
 
         html += `<h3>Monatliche Kosten: <strong>${formatNumber(totalMonthlyCost)}</strong></h3>`; // Changed field
-        html += `<p style="font-size: 0.9em;">Gesamtkosten: ${formatNumber(totalCost)}</p>`; // Additional cost information
-        html += `<p style="font-size: 0.9em;">Rabattierte Gesamtkosten: ${formatNumber(totalDiscountedCostSum)}</p>`; // Additional cost information
+        html += `<p style="font-size: 0.9em;">Kosten/Pflanze: ${formatNumber(selectedOption.costPerPlant)}</p>`; // Additional cost information
+        html += `<p style="font-size: 0.9em;">Kosten/Gramm: ${formatNumber(selectedOption.costPerGram)}</p>`; // Additional cost information
 
         html += "<h3>Abo-Optionen</h3>";
         html += `<div class="table-wrapper">
@@ -495,9 +495,8 @@ th, td {
         </div>`;
 
         html += `<p class="footnote">* 10 Wochen entsprechen einem Grow-Zyklus.</p>`;
-        html += `<p class="footnote">* Coco ∅ 20 % mehr Ertrag als Erde.</p>`;
-        html += `<p class="footnote" id="water-consumption-footnote">* Pro Pflanze gesamt ∅ Verbrauch von 63 L Gießwasser.</p>`;
         html += `<p class="footnote">* Nettopreise, zzgl. MwSt.</p>`;
+        html += `<p class="footnote" id="water-consumption-footnote">* Pro Pflanze gesamt ∅ Verbrauch von 63 L Gießwasser.</p>`;
 
         // Add discount information table
         html += `
