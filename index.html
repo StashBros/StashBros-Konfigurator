@@ -495,8 +495,9 @@ th, td {
         </div>`;
 
         html += `<p class="footnote">* 10 Wochen entsprechen einem Grow-Zyklus.</p>`;
-        html += `<p class="footnote">* Nettopreise, zzgl. MwSt.</p>`;
+        html += `<p class="footnote">* Coco ∅ 20 % mehr Ertrag als Erde.</p>`;
         html += `<p class="footnote" id="water-consumption-footnote">* Pro Pflanze gesamt ∅ Verbrauch von 63 L Gießwasser.</p>`;
+        html += `<p class="footnote">* Nettopreise, zzgl. MwSt.</p>`;
 
         // Add discount information table
         html += `
@@ -552,7 +553,13 @@ th, td {
     function updateWaterConsumption() {
         const substrate = document.getElementById("substrate-choice").value;
         const waterConsumptionInput = document.getElementById("water-consumption");
+        const yieldInput = document.getElementById("yield");
         waterConsumptionInput.value = data.waterConsumption[substrate];
+        if (substrate === "soil") {
+            yieldInput.value = 52; // Set yield to 52 grams for soil
+        } else {
+            yieldInput.value = data.averageYield; // Set yield to default for coco
+        }
         updateFootnote();
     }
 
