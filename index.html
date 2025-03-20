@@ -386,7 +386,7 @@ th, td {
         return price * (1 - discount);
     }
 
-    function displayRecommendations(recommendations, subscriptionOptions, totalCost) {
+    function displayRecommendations(recommendations, subscriptionOptions, totalCost, totalPlants) {
         const output = document.getElementById("output");
         const selectedWeeks = parseInt(document.getElementById("subscription-choice").value, 10); // Get selected subscription option
         const selectedOption = subscriptionOptions.find(option => option.weeks === selectedWeeks); // Find the selected subscription option
@@ -443,6 +443,7 @@ th, td {
         html += `<h3>Monatliche Kosten: <strong>${formatNumber(totalMonthlyCost)}</strong></h3>`; // Changed field
         html += `<p style="font-size: 0.9em;">Kosten/Pflanze: ${formatNumber(selectedOption.costPerPlant)}</p>`; // Additional cost information
         html += `<p style="font-size: 0.9em;">Kosten/Gramm: ${formatNumber(selectedOption.costPerGram)}</p>`; // Additional cost information
+        html += `<p style="font-size: 0.9em;">Anzahl der Pflanzen: ${totalPlants}</p>`; // Added plant information
 
         html += "<h3>Abo-Optionen</h3>";
         html += `<div class="table-wrapper">
@@ -579,7 +580,7 @@ th, td {
         const plants = Math.ceil(members * (150 / yieldPerPlant)); // Corrected calculation
         const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations);
 
-        displayRecommendations(recommendations, subscriptionOptions, totalCost);
+        displayRecommendations(recommendations, subscriptionOptions, totalCost, plants);
         document.getElementById("subscription-choice").value = selectedOption; // Retain selected subscription option
     });
 
@@ -599,7 +600,7 @@ th, td {
         const plants = Math.ceil(members * (150 / yieldPerPlant)); // Corrected calculation
         const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations);
 
-        displayRecommendations(recommendations, subscriptionOptions, totalCost);
+        displayRecommendations(recommendations, subscriptionOptions, totalCost, plants);
     });
 
     document.getElementById("yield").addEventListener("input", () => {
@@ -618,7 +619,7 @@ th, td {
         const plants = Math.ceil(members * (150 / yieldPerPlant)); // Corrected calculation
         const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations);
 
-        displayRecommendations(recommendations, subscriptionOptions, totalCost);
+        displayRecommendations(recommendations, subscriptionOptions, totalCost, plants);
     });
 
     document.getElementById("water-consumption").addEventListener("input", () => {
@@ -637,7 +638,7 @@ th, td {
         const plants = Math.ceil(members * (150 / yieldPerPlant)); // Corrected calculation
         const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations);
 
-        displayRecommendations(recommendations, subscriptionOptions, totalCost);
+        displayRecommendations(recommendations, subscriptionOptions, totalCost, plants);
     });
 
     document.getElementById("substrate-choice").addEventListener("change", () => {
@@ -657,7 +658,7 @@ th, td {
         const plants = Math.ceil(members * (150 / yieldPerPlant)); // Corrected calculation
         const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations);
 
-        displayRecommendations(recommendations, subscriptionOptions, totalCost);
+        displayRecommendations(recommendations, subscriptionOptions, totalCost, plants);
         updateFootnote(); // Update footnote after recommendations are displayed
     });
 
