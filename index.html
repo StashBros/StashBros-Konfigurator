@@ -180,7 +180,8 @@ th, td {
             soil: [
                 { name: "Soil Bag 50L", size: 50, price: 12.99 },
                 { name: "Soil Bag 20L", size: 20, price: 5.99 }
-            ]
+            ],
+            plug: { name: "Plug", price: 13.90, traySize: 84 } // New product
         }
     };
 
@@ -332,6 +333,15 @@ th, td {
                 });
             });
         }
+        // Add calculation for Plug for both substrates
+        const totalPlugTrays = Math.ceil(totalPlants / data.perPlantProducts.plug.traySize);
+        const totalPlugCost = totalPlugTrays * data.perPlantProducts.plug.price;
+        recommendations.push({
+            name: data.perPlantProducts.plug.name,
+            totalUsage: `${totalPlugTrays} Trays`,
+            combination: [{ size: data.perPlantProducts.plug.traySize, price: data.perPlantProducts.plug.price, units: totalPlugTrays }],
+            totalCost: totalPlugCost
+        });
 
         return recommendations;
     }
@@ -409,7 +419,7 @@ th, td {
                 <tbody>`;
         recommendations.forEach(rec => {
             const combinationDetails = rec.combination.map(comb => 
-                `${comb.units} x ${comb.size}${rec.name === "Growbag" || rec.name === "Cube" || rec.name.includes("Soil Bag") ? " Stück" : " L"}`
+                `${comb.units} x ${comb.size}${rec.name === "Growbag" || rec.name === "Cube" || rec.name.includes("Soil Bag") || rec.name === "Plug" ? " Stück" : " L"}`
             ).join("<br>");
             const priceDetails = rec.combination.map(comb => 
                 formatNumber(comb.price)
