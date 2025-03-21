@@ -464,9 +464,9 @@ th, td {
         const totalMonthlyCost = totalDiscountedCostSum / 2.5; // Calculate total monthly cost based on rabattierte Gesamtkosten divided by 2.5
 
         html += `<h3>Monatliche Kosten: <strong>${formatNumber(totalMonthlyCost)}</strong></h3>`; // Changed field
+        html += `<p style="font-size: 0.9em;">Anzahl der Pflanzen: ${totalPlants}</p>`; // Added plant information
         html += `<p style="font-size: 0.9em;">Kosten/Pflanze: ${formatNumber(selectedOption.costPerPlant)}</p>`; // Additional cost information
         html += `<p style="font-size: 0.9em;">Kosten/Gramm: ${formatNumber(selectedOption.costPerGram)}</p>`; // Additional cost information
-        html += `<p style="font-size: 0.9em;">Anzahl der Pflanzen: ${totalPlants}</p>`; // Added plant information
 
         html += "<h3>Abo-Optionen</h3>";
         html += `<div class="table-wrapper">
