@@ -357,7 +357,7 @@ th, td {
         return recommendations;
     }
 
-    function calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations) {
+    function calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations, substrate) {
         const options = [
             { weeks: 10, discount: 0.02, months: 2.5 },
             { weeks: 20, discount: 0.07, months: 5 },
@@ -367,7 +367,7 @@ th, td {
         return options.map(option => {
             const discountedTotalCost = recommendations.reduce((sum, rec) => {
                 const discountedCost = rec.combination.reduce((subSum, comb) => {
-                    return subSum + comb.units * getDiscountedPrice(comb.size, comb.price, option.weeks, rec.name);
+                    return subSum + comb.units * getDiscountedPrice(comb.size, comb.price, option.weeks, rec.name, substrate);
                 }, 0);
                 return sum + discountedCost;
             }, 0);
@@ -383,13 +383,13 @@ th, td {
         });
     }
 
-    function getDiscountedPrice(size, price, weeks, productName) {
+    function getDiscountedPrice(size, price, weeks, productName, substrate) {
         let discount = 0;
-        if (productName === "Growbag" || productName === "Cube" || productName.includes("Soil Bag")) {
-            if (weeks === 40) discount = 0.15;
-            else if (weeks === 20) discount = 0.10;
+        if (substrate === "soil" && (productName.includes("Soil Bag") || productName === "Plug")) {
+            if (weeks === 40) discount = 0.10;
+            else if (weeks === 20) discount = 0.075;
             else if (weeks === 10) discount = 0.05;
-        } else {
+        } else if (substrate !== "soil") {
             if (weeks === 40) {
                 if (size <= 1) discount = 0.15;
                 else if (size <= 5) discount = 0.10;
@@ -436,10 +436,10 @@ th, td {
                 formatNumber(comb.price)
             ).join("<br>");
             const discountedPriceDetails = rec.combination.map(comb => 
-                formatNumber(getDiscountedPrice(comb.size, comb.price, selectedWeeks, rec.name))
+                formatNumber(getDiscountedPrice(comb.size, comb.price, selectedWeeks, rec.name, substrate))
             ).join("<br>");
             const totalDiscountedCost = rec.combination.reduce((sum, comb) => 
-                sum + comb.units * getDiscountedPrice(comb.size, comb.price, selectedWeeks, rec.name), 0);
+                sum + comb.units * getDiscountedPrice(comb.size, comb.price, selectedWeeks, rec.name, substrate), 0);
             const monthlyCost = totalDiscountedCost / 2.5; // Calculate monthly cost based on rabattierte Gesamtkosten divided by 2.5
 
             html += `
@@ -457,7 +457,7 @@ th, td {
         
         const totalDiscountedCostSum = recommendations.reduce((sum, rec) => {
             return sum + rec.combination.reduce((subSum, comb) => 
-                subSum + comb.units * getDiscountedPrice(comb.size, comb.price, selectedWeeks, rec.name), 0);
+                subSum + comb.units * getDiscountedPrice(comb.size, comb.price, selectedWeeks, rec.name, substrate), 0);
         }, 0);
         const totalMonthlyCost = totalDiscountedCostSum / 2.5; // Calculate total monthly cost based on rabattierte Gesamtkosten divided by 2.5
 
@@ -534,6 +534,19 @@ th, td {
                     </tr>
                 </thead>
                 <tbody>
+                    ${substrate === "soil" ? `
+                    <tr>
+                        <td>Soil Bags</td>
+                        <td>10%</td>
+                        <td>7.5%</td>
+                        <td>5%</td>
+                    </tr>
+                    <tr>
+                        <td>Plug</td>
+                        <td>10%</td>
+                        <td>7.5%</td>
+                        <td>5%</td>
+                    </tr>` : `
                     <tr>
                         <td>Bis 1 L</td>
                         <td>15%</td>
@@ -553,11 +566,11 @@ th, td {
                         <td>2%</td>
                     </tr>
                     <tr id="discount-product-row">
-                        <td>${substrate === "soil" ? "Soil Bags" : "Growbag und Cube"}</td>
+                        <td>Growbag und Cube</td>
                         <td>15%</td>
                         <td>10%</td>
                         <td>5%</td>
-                    </tr>
+                    </tr>`}
                 </tbody>
             </table>
         </div>`;
@@ -599,7 +612,7 @@ th, td {
         const recommendations = calculateRecommendations(members, yieldPerPlant, waterConsumption, substrate);
         const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
         const plants = Math.ceil(members * (150 / yieldPerPlant)); // Corrected calculation
-        const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations);
+        const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations, substrate);
 
         displayRecommendations(recommendations, subscriptionOptions, totalCost, plants);
         document.getElementById("subscription-choice").value = selectedOption; // Retain selected subscription option
@@ -619,7 +632,7 @@ th, td {
         const recommendations = calculateRecommendations(members, yieldPerPlant, waterConsumption, substrate);
         const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
         const plants = Math.ceil(members * (150 / yieldPerPlant)); // Corrected calculation
-        const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations);
+        const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations, substrate);
 
         displayRecommendations(recommendations, subscriptionOptions, totalCost, plants);
     });
@@ -638,7 +651,7 @@ th, td {
         const recommendations = calculateRecommendations(members, yieldPerPlant, waterConsumption, substrate);
         const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
         const plants = Math.ceil(members * (150 / yieldPerPlant)); // Corrected calculation
-        const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations);
+        const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations, substrate);
 
         displayRecommendations(recommendations, subscriptionOptions, totalCost, plants);
     });
@@ -657,7 +670,7 @@ th, td {
         const recommendations = calculateRecommendations(members, yieldPerPlant, waterConsumption, substrate);
         const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
         const plants = Math.ceil(members * (150 / yieldPerPlant)); // Corrected calculation
-        const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations);
+        const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations, substrate);
 
         displayRecommendations(recommendations, subscriptionOptions, totalCost, plants);
     });
@@ -677,7 +690,7 @@ th, td {
         const recommendations = calculateRecommendations(members, yieldPerPlant, waterConsumption, substrate);
         const totalCost = recommendations.reduce((sum, rec) => sum + rec.totalCost, 0);
         const plants = Math.ceil(members * (150 / yieldPerPlant)); // Corrected calculation
-        const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations);
+        const subscriptionOptions = calculateSubscriptionOptions(totalCost, plants, yieldPerPlant, recommendations, substrate);
 
         displayRecommendations(recommendations, subscriptionOptions, totalCost, plants);
         updateFootnote(); // Update footnote after recommendations are displayed
