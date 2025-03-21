@@ -372,13 +372,15 @@ th, td {
                 return sum + discountedCost;
             }, 0);
 
+            const adjustedYieldPerPlant = substrate === "soil" ? yieldPerPlant * 0.8 : yieldPerPlant; // Adjust yield for soil
+
             return {
                 weeks: option.weeks,
                 discountedPrice: discountedTotalCost,
                 discountAmount: totalCost - discountedTotalCost,
                 monthlyCost: discountedTotalCost / option.months,
                 costPerPlant: discountedTotalCost / plants,
-                costPerGram: discountedTotalCost / (yieldPerPlant * plants)
+                costPerGram: discountedTotalCost / (adjustedYieldPerPlant * plants) // Use adjusted yield
             };
         });
     }
