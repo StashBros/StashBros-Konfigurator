@@ -372,7 +372,7 @@ th, td {
                 return sum + discountedCost;
             }, 0);
 
-            const adjustedYieldPerPlant = substrate === "soil" ? yieldPerPlant * 0.8 : yieldPerPlant; // Adjust yield for soil
+            const adjustedYieldPerPlant = yieldPerPlant; // Use the selected yield for both coco and soil
 
             return {
                 weeks: option.weeks,
@@ -466,7 +466,7 @@ th, td {
         html += `<h3>Monatliche Kosten: <strong>${formatNumber(totalMonthlyCost)}</strong></h3>`; // Changed field
         html += `<p style="font-size: 0.9em;">Anzahl der Pflanzen: ${totalPlants}</p>`; // Added plant information
         html += `<p style="font-size: 0.9em;">Kosten/Pflanze: ${formatNumber(selectedOption.costPerPlant)}</p>`; // Additional cost information
-        html += `<p style="font-size: 0.9em;">Kosten/Gramm: ${formatNumber(selectedOption.costPerGram)}</p>`; // Additional cost information
+        html += `<p style="font-size: 0.9em;">Kosten/Gramm: ${substrate === "soil" ? selectedOption.costPerGram.toFixed(3).replace('.', ',') : formatNumber(selectedOption.costPerGram)}</p>`; // Adjusted cost per gram display
 
         html += "<h3>Abo-Optionen</h3>";
         html += `<div class="table-wrapper">
@@ -506,7 +506,7 @@ th, td {
                     <td>${formatNumber(sub.discountedPrice)}</td>
                     <td>${formatNumber(rabattierteGesamtkosten)}</td>
                     <td>${formatNumber(monatlicheKosten)}</td>
-                    <td>${formatNumber(sub.costPerGram)}</td>
+                    <td>${substrate === "soil" ? sub.costPerGram.toFixed(3).replace('.', ',') : formatNumber(sub.costPerGram)}</td> <!-- Adjusted cost per gram display -->
                     <td>${formatNumber(sub.costPerPlant)}</td>
                     <td>${formatNumber(ersparnis)}</td>
                 </tr>`;
