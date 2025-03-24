@@ -238,13 +238,13 @@ th, td {
 
         const recommendations = data.products[substrate].map(product => {
             let baseUsage = product.baseUsage;
-            if (product.name === "TNT Complex") {
+            if (substrate === "coco" && product.name === "TNT Complex") {
                 if (waterType === "soft") {
                     baseUsage *= 0.6667; // Reduce by 33% for soft water
                 } else if (waterType === "hard") {
                     baseUsage *= 0.3333; // Reduce by 66.67% for hard water
                 }
-            } else if (product.name === "Coco") {
+            } else if (substrate === "coco" && product.name === "Coco") {
                 if (waterType === "soft") {
                     baseUsage *= 0.8239; // Reduce to 82.39% for soft water
                 } else if (waterType === "hard") {
