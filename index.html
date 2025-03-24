@@ -681,6 +681,7 @@ th, td {
     document.getElementById("substrate-choice").addEventListener("change", () => {
         updateWaterConsumption();
         updateValues();
+        updateFootnote(); // Ensure footnote is updated
         calculateAndDisplay();
     });
 
@@ -694,6 +695,7 @@ th, td {
     document.addEventListener("DOMContentLoaded", () => {
         updateWaterConsumption();
         updateValues();
+        updateFootnote(); // Ensure footnote is updated on page load
         calculateAndDisplay(); // Ensure initial calculation on page load
     });
 
