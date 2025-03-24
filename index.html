@@ -146,6 +146,8 @@ th, td {
         <option value="20">20 Wochen</option>
         <option value="40" selected>40 Wochen</option> <!-- Default selection -->
     </select>
+    <label for="wattage">Wattage pro m²:</label>
+    <input type="number" id="wattage" placeholder="z. B. 600" min="1" value="600">
     <button id="calculate-btn">Empfehlung berechnen</button>
     <div class="output" id="output"></div>
 </div>
@@ -188,7 +190,16 @@ th, td {
                 { name: "Soil Bag 20L", size: 20, price: 5.99 }
             ],
             plug: { name: "Plug", price: 12.90, traySize: 84 } // New product
-        }
+        },
+        standardYield: {
+            coco: 80,
+            soil: 60
+        },
+        standardWaterConsumption: {
+            coco: 63,
+            soil: 35.76
+        },
+        baseWattage: 600 // Base wattage for calculations
     };
 
     function formatNumber(value) {
@@ -227,11 +238,28 @@ th, td {
         return optimized;
     }
 
-    function calculateRecommendations(members, yieldPerPlant, waterConsumption, substrate, waterType) {
-        if (substrate === "soil") {
-            yieldPerPlant *= 0.8; // Reduce yield by 20% for soil
-        }
+    function calculateYieldPerPlant(wattage, substrate) {
+        const baseYield = data.standardYield[substrate];
+        return (baseYield / data.baseWattage) * wattage;
+    }
 
+    function calculateWaterConsumption(newYield, substrate) {
+        const standardYield = data.standardYield[substrate];
+        const standardWaterConsumption = data.standardWaterConsumption[substrate];
+        return (standardWaterConsumption * newYield) / standardYield;
+    }
+
+    function updateValues() {
+        const wattage = parseFloat(document.getElementById("wattage").value);
+        const substrate = document.getElementById("substrate-choice").value;
+        const newYield = calculateYieldPerPlant(wattage, substrate);
+        const newWaterConsumption = calculateWaterConsumption(newYield, substrate);
+
+        document.getElementById("yield").value = newYield.toFixed(2);
+        document.getElementById("water-consumption").value = newWaterConsumption.toFixed(2);
+    }
+
+    function calculateRecommendations(members, yieldPerPlant, waterConsumption, substrate, waterType) {
         const totalYieldNeeded = members * 150; // 150 grams per member
         const totalPlants = Math.ceil(totalYieldNeeded / yieldPerPlant); // Calculate total plants needed
         const waterConsumptionFactor = waterConsumption / data.waterConsumption[substrate]; // Calculate water consumption factor
@@ -251,8 +279,7 @@ th, td {
                     baseUsage *= 0.6479; // Reduce to 64.79% for hard water
                 }
             }
-            const precision = product.name === "SuperVit" ? 5 : 5;
-            const totalUsage = parseFloat((baseUsage * totalPlants * waterConsumptionFactor).toFixed(precision)); // Adjusted calculation
+            const totalUsage = baseUsage * totalPlants * waterConsumptionFactor; // Adjusted calculation
             let result = [];
             let remainder = totalUsage;
 
@@ -262,7 +289,7 @@ th, td {
                 const units = Math.floor(remainder / size);
                 if (units > 0) {
                     result.push({ size, price, units });
-                    remainder = parseFloat((remainder - units * size).toFixed(precision));
+                    remainder -= units * size;
                 }
             }
 
@@ -302,7 +329,7 @@ th, td {
 
             const totalCost = result.reduce((sum, item) => sum + item.units * item.price, 0);
 
-            return { name: product.name, totalUsage: `${totalUsage} L`, combination: result, totalCost };
+            return { name: product.name, totalUsage: `${totalUsage.toFixed(2)} L`, combination: result, totalCost };
         });
 
         if (substrate === "soil") {
@@ -348,7 +375,7 @@ th, td {
             const totalSoilCost = combinedSoilBags.reduce((sum, item) => sum + item.units * item.price, 0);
             recommendations.push({
                 name: "Soil Bags",
-                totalUsage: `${totalSoilNeeded} L`,
+                totalUsage: `${totalSoilNeeded.toFixed(2)} L`,
                 combination: combinedSoilBags,
                 totalCost: totalSoilCost
             });
@@ -610,21 +637,23 @@ th, td {
         const substrate = document.getElementById("substrate-choice").value;
         const waterConsumptionInput = document.getElementById("water-consumption");
         const yieldInput = document.getElementById("yield");
-        waterConsumptionInput.value = data.waterConsumption[substrate];
         if (substrate === "soil") {
-            yieldInput.value = 52; // Set yield to 52 grams for soil
+            yieldInput.value = 60; // Set yield to 60 grams for soil
+            waterConsumptionInput.value = 35.76; // Set water consumption to 35.76 liters for soil
         } else {
-            yieldInput.value = data.averageYield; // Set yield to default for coco
+            yieldInput.value = 80; // Set yield to 80 grams for coco
+            waterConsumptionInput.value = 63; // Set water consumption to 63 liters for coco
         }
         updateFootnote();
     }
 
     function calculateAndDisplay() {
         const members = parseInt(document.getElementById("members").value, 10);
-        const yieldPerPlant = parseFloat(document.getElementById("yield").value) || data.averageYield;
-        const waterConsumption = parseFloat(document.getElementById("water-consumption").value);
+        const wattage = parseFloat(document.getElementById("wattage").value);
+        const substrate = document.getElementById("substrate-choice").value;
+        const yieldPerPlant = calculateYieldPerPlant(wattage, substrate);
+        const waterConsumption = calculateWaterConsumption(yieldPerPlant, substrate);
         const selectedOption = document.getElementById("subscription-choice").value; // Get selected subscription option
-        const substrate = document.getElementById("substrate-choice").value; // Get selected substrate
         const waterType = document.getElementById("water-type").value; // Get selected water type
 
         if (isNaN(members) || members < 1 || isNaN(yieldPerPlant) || yieldPerPlant < 1 || isNaN(waterConsumption) || waterConsumption < 1) {
@@ -651,14 +680,21 @@ th, td {
 
     document.getElementById("substrate-choice").addEventListener("change", () => {
         updateWaterConsumption();
+        updateValues();
         calculateAndDisplay();
-        updateFootnote(); // Update footnote after recommendations are displayed
     });
 
     document.getElementById("water-type").addEventListener("change", calculateAndDisplay);
 
+    document.getElementById("wattage").addEventListener("input", () => {
+        updateValues();
+        calculateAndDisplay();
+    });
+
     document.addEventListener("DOMContentLoaded", () => {
         updateWaterConsumption();
+        updateValues();
+        calculateAndDisplay(); // Ensure initial calculation on page load
     });
 
     document.addEventListener("click", (event) => {
@@ -706,6 +742,7 @@ Mit freundlichen Grüßen,
 
     // Initialize water consumption based on default substrate
     updateWaterConsumption();
+    calculateAndDisplay(); // Ensure initial calculation on page load
 </script>
 </body>
 </html>
