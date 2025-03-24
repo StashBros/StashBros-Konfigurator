@@ -568,6 +568,7 @@ th, td {
         html += `<p class="footnote">* 10 Wochen entsprechen einem Grow-Zyklus.</p>`;
         html += `<p class="footnote">* Nettopreise, zzgl. MwSt.</p>`;
         html += `<p class="footnote" id="water-consumption-footnote">* Pro Pflanze gesamt ∅ Verbrauch von 63 L Gießwasser.</p>`;
+        html += `<p class="footnote">* 9 Pflanzen pro m².</p>`; // Updated footnote
 
         // Add discount information table
         html += `
@@ -681,7 +682,6 @@ th, td {
     document.getElementById("substrate-choice").addEventListener("change", () => {
         updateWaterConsumption();
         updateValues();
-        updateFootnote(); // Ensure footnote is updated
         calculateAndDisplay();
     });
 
